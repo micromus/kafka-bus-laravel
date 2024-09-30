@@ -1,7 +1,5 @@
 <?php
 
-use Illuminate\Support\Str;
-
 return [
     'default' => env('KAFKA_CONNECTION', 'kafka'),
 
@@ -26,17 +24,17 @@ return [
                 'sasl.username' => env('KAFKA_SASL_USERNAME'),
                 'sasl.password' => env('KAFKA_SASL_PASSWORD'),
 
-                'log_level' => env('KAFKA_DEBUG', false) ? (string)LOG_DEBUG : (string)LOG_INFO,
+                'log_level' => env('KAFKA_DEBUG', false) ? (string) LOG_DEBUG : (string) LOG_INFO,
 
                 /*
                  | Choose if debug is enabled or not.
                  */
                 'debug' => env('KAFKA_DEBUG', false) ? 'all' : null,
-            ]
-        ]
+            ],
+        ],
     ],
 
-    'prefix' => env('KAFKA_PREFIX', env('APP_ENV', 'local') . '.'),
+    'prefix' => env('KAFKA_PREFIX', env('APP_ENV', 'local').'.'),
 
     'topics' => [
         // 'fact-products' => 'fact.products.1'
@@ -75,10 +73,8 @@ return [
              */
             'group.id' => env('KAFKA_CONSUMER_GROUP_ID', env('APP_NAME')),
 
-
             'auto.offset.reset' => 'beginning',
         ],
-
 
         'listeners' => [
             //    'default-listener' => [
