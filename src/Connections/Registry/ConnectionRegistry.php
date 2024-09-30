@@ -13,14 +13,13 @@ class ConnectionRegistry
         protected DriverRegistry $driverRegistry,
         protected string $defaultConnection,
         protected array $connectionsConfig
-    ) {
-    }
+    ) {}
 
-    public function connection(string $connectionName = null): Connection
+    public function connection(?string $connectionName = null): Connection
     {
         $connectionName = $connectionName ?: $this->defaultConnection;
 
-        if (!isset($this->activeConnections[$connectionName])) {
+        if (! isset($this->activeConnections[$connectionName])) {
             $this->activeConnections[] = $this->makeConnection($connectionName);
         }
 
@@ -36,7 +35,7 @@ class ConnectionRegistry
 
     private function getConnectionConfig(string $connectionName): array
     {
-        if (!isset($this->connectionsConfig[$connectionName])) {
+        if (! isset($this->connectionsConfig[$connectionName])) {
             $availableConnections = implode(', ', array_keys($this->connectionsConfig));
 
             throw new ConnectionException(

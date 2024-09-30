@@ -9,9 +9,9 @@ interface Thread
     public function publish(Message $message): void;
 
     /**
-     * @param Message[] $messages
+     * @param  Message[]  $messages
      */
     public function publishMany(array $messages): void;
 
-    public function listen(string $listenerName = null): void;
+    public function listen(?string $listenerName = null): void;
 }

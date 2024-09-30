@@ -16,15 +16,14 @@ class Producer implements ProducerContract
     public function __construct(
         protected KafkaProducer $producer,
         protected string $topicName,
-        protected RetryRepeater $retryRepeater = new RetryRepeater()
+        protected RetryRepeater $retryRepeater = new RetryRepeater
     ) {
         $this->topic = $this->producer
             ->newTopic($this->topicName);
     }
 
     /**
-     * @param ProducerMessage[] $messages
-     * @return void
+     * @param  ProducerMessage[]  $messages
      */
     public function produce(array $messages): void
     {
@@ -50,7 +49,7 @@ class Producer implements ProducerContract
     private function flush(): void
     {
         $this->retryRepeater
-            ->execute(fn() => $this->attemptFlush());
+            ->execute(fn () => $this->attemptFlush());
     }
 
     /**
@@ -60,7 +59,7 @@ class Producer implements ProducerContract
     {
         $result = $this->producer->flush(1000);
 
-        if (RD_KAFKA_RESP_ERR_NO_ERROR === $result) {
+        if ($result === RD_KAFKA_RESP_ERR_NO_ERROR) {
             return;
         }
 

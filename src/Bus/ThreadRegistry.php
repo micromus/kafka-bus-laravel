@@ -14,12 +14,11 @@ class ThreadRegistry
         protected ConnectionRegistry $connectionRegistry,
         protected ProducerStreamFactory $producerStreamFactory,
         protected ConsumerStreamFactory $consumerStreamFactory
-    ) {
-    }
+    ) {}
 
     public function thread(string $connectionName): Thread
     {
-        if (!isset($this->activeThreads[$connectionName])) {
+        if (! isset($this->activeThreads[$connectionName])) {
             $this->activeThreads[$connectionName] = $this->makeThread($connectionName);
         }
 

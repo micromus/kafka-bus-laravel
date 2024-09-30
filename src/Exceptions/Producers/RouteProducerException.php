@@ -2,7 +2,4 @@
 
 namespace Micromus\KafkaBus\Exceptions\Producers;
 
-class RouteProducerException extends ProducerException
-{
-
-}
+class RouteProducerException extends ProducerException {}

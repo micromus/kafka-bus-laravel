@@ -16,7 +16,7 @@ class DriverRegistry
 
     public function makeConnection(string $driverName, array $options): Connection
     {
-        if (!isset($this->drivers[$driverName])) {
+        if (! isset($this->drivers[$driverName])) {
             $availableDrivers = implode(', ', array_keys($this->drivers));
 
             throw new DriverException("Driver [$driverName] not defined. Available drivers: $availableDrivers");

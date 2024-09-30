@@ -16,8 +16,7 @@ class ProducerStreamFactory implements ProducerStreamFactoryContract
         protected MessagePipelineFactory $messagePipelineFactory,
         protected array $producerConfiguration,
         protected array $routes
-    ) {
-    }
+    ) {}
 
     /**
      * @throws RouteProducerException
@@ -39,13 +38,13 @@ class ProducerStreamFactory implements ProducerStreamFactoryContract
      */
     private function rawConfiguration(string $messageClass): array
     {
-        if (!isset($this->routes[$messageClass])) {
+        if (! isset($this->routes[$messageClass])) {
             throw new RouteProducerException("Route for message [$messageClass] not found");
         }
 
         $routeConfiguration = $this->routes[$messageClass];
 
-        if (!isset($routeConfiguration['topic_key'])) {
+        if (! isset($routeConfiguration['topic_key'])) {
             throw new RouteProducerException("Parameter \"topic_key\" [$messageClass] is required");
         }
 
@@ -55,8 +54,8 @@ class ProducerStreamFactory implements ProducerStreamFactoryContract
 
             'middlewares' => [
                 ...($this->producerConfiguration['middlewares'] ?? []),
-                ...($routeConfiguration['middlewares'] ?? [])
-            ]
+                ...($routeConfiguration['middlewares'] ?? []),
+            ],
         ];
     }
 

@@ -17,8 +17,7 @@ class Thread implements ThreadContract
         protected Connection $connection,
         protected ProducerStreamFactory $producerStreamFactory,
         protected ConsumerStreamFactory $consumerStreamFactory
-    ) {
-    }
+    ) {}
 
     public function publish(Message $message): void
     {
@@ -48,7 +47,7 @@ class Thread implements ThreadContract
 
     private function getOrCreateProducerStream(string $messageClass): ProducerStream
     {
-        if (!isset($this->activeProducerStreams[$messageClass])) {
+        if (! isset($this->activeProducerStreams[$messageClass])) {
             $this->activeProducerStreams[$messageClass] = $this->producerStreamFactory
                 ->create($this->connection, $messageClass);
         }
@@ -56,7 +55,7 @@ class Thread implements ThreadContract
         return $this->activeProducerStreams[$messageClass];
     }
 
-    public function listen(string $listenerName = null): void
+    public function listen(?string $listenerName = null): void
     {
         $this->consumerStreamFactory
             ->create($this->connection, $listenerName)

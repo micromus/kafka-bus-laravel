@@ -8,6 +8,5 @@ readonly class ProducerConfiguration
         public string $compression = 'snappy',
         public int $flushTimeout = 5000,
         public int $flushRetries = 10
-    ) {
-    }
+    ) {}
 }

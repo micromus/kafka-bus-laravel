@@ -12,7 +12,7 @@ return [
 
         'kafka' => [
             'driver' => 'kafka',
-            'prefix' => env('KAFKA_PREFIX', env('APP_ENV', 'local') . '.'),
+            'prefix' => env('KAFKA_PREFIX', env('APP_ENV', 'local').'.'),
             'options' => [
                 /*
                  | Your kafka brokers url.
@@ -22,7 +22,7 @@ return [
                 /*
                  | Default security protocol
                  */
-                'security_protocol' =>  env('KAFKA_SECURITY_PROTOCOL', 'PLAINTEXT'),
+                'security_protocol' => env('KAFKA_SECURITY_PROTOCOL', 'PLAINTEXT'),
 
                 /*
                  | Default sasl configuration
@@ -30,7 +30,7 @@ return [
                 'sasl' => [
                     'mechanisms' => env('KAFKA_MECHANISMS', 'PLAINTEXT'),
                     'username' => env('KAFKA_USERNAME'),
-                    'password' => env('KAFKA_PASSWORD')
+                    'password' => env('KAFKA_PASSWORD'),
                 ],
 
                 'log_level' => env('KAFKA_LOG_LEVEL', (string) LOG_INFO),
@@ -39,8 +39,8 @@ return [
                  | Choose if debug is enabled or not.
                  */
                 'debug' => env('KAFKA_DEBUG', false),
-            ]
-        ]
+            ],
+        ],
     ],
 
     'topics' => [
@@ -81,20 +81,19 @@ return [
          */
         'consume_timeout' => 20000,
 
-
         'listeners' => [
-        //    'default-listener' => [
-        //        'middlewares' => [],
-        //        'auto_commit' => env('KAFKA_CONSUMER_AUTO_COMMIT', true), // Override global option, remove if not need
-        //        'consume_timeout' => 20000, // Override global option, remove if not need
-        //
-        //        'routes' => [
-        //            'fact-products' => [
-        //                'handler' => App\Kafka\Consumers\ProductsTopicConsumer::class,
-        //                'converter' => App\Kafka\Messages\Converters\ProductMessageConverter::class,
-        //            ],
-        //        ],
-        //    ],
+            //    'default-listener' => [
+            //        'middlewares' => [],
+            //        'auto_commit' => env('KAFKA_CONSUMER_AUTO_COMMIT', true), // Override global option, remove if not need
+            //        'consume_timeout' => 20000, // Override global option, remove if not need
+            //
+            //        'routes' => [
+            //            'fact-products' => [
+            //                'handler' => App\Kafka\Consumers\ProductsTopicConsumer::class,
+            //                'converter' => App\Kafka\Messages\Converters\ProductMessageConverter::class,
+            //            ],
+            //        ],
+            //    ],
         ],
     ],
 
@@ -125,15 +124,15 @@ return [
         'flush_retries' => 5,
 
         'routes' => [
-        //    App\Kafka\Messages\ProductMessage::class => [
-        //        'topic_key' => 'fact-products',
-        //        'options' => [
-        //            'middlewares' => [],
-        //            'compression' => env('KAFKA_COMPRESSION_TYPE', 'snappy'), // Override global option, remove if not need
-        //            'flush_timeout' => 5000, // Override global option, remove if not need
-        //            'flush_retries' => 5, // Override global option, remove if not need
-        //        ]
-        //    ]
-        ]
-    ]
+            //    App\Kafka\Messages\ProductMessage::class => [
+            //        'topic_key' => 'fact-products',
+            //        'options' => [
+            //            'middlewares' => [],
+            //            'compression' => env('KAFKA_COMPRESSION_TYPE', 'snappy'), // Override global option, remove if not need
+            //            'flush_timeout' => 5000, // Override global option, remove if not need
+            //            'flush_retries' => 5, // Override global option, remove if not need
+            //        ]
+            //    ]
+        ],
+    ],
 ];

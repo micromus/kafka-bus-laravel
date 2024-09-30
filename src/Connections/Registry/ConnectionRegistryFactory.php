@@ -9,8 +9,7 @@ class ConnectionRegistryFactory
     public function __construct(
         protected DriverRegistry $driverRegistry,
         protected Repository $configRepository
-    ) {
-    }
+    ) {}
 
     public function create(): ConnectionRegistry
     {
