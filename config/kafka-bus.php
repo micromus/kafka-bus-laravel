@@ -12,36 +12,31 @@ return [
 
         'kafka' => [
             'driver' => 'kafka',
-            'prefix' => env('KAFKA_PREFIX', env('APP_ENV', 'local') . '.'),
             'options' => [
                 /*
                  | Your kafka brokers url.
                  */
-                'brokers' => env('KAFKA_BROKERS', 'localhost:9092'),
+                'metadata.broker.list' => env('KAFKA_BROKER_LIST'),
 
                 /*
                  | Default security protocol
                  */
-                'security_protocol' =>  env('KAFKA_SECURITY_PROTOCOL', 'PLAINTEXT'),
+                'security.protocol' => env('KAFKA_SECURITY_PROTOCOL', 'plaintext'),
+                'sasl.mechanisms' => env('KAFKA_SASL_MECHANISMS'),
+                'sasl.username' => env('KAFKA_SASL_USERNAME'),
+                'sasl.password' => env('KAFKA_SASL_PASSWORD'),
 
-                /*
-                 | Default sasl configuration
-                 */
-                'sasl' => [
-                    'mechanisms' => env('KAFKA_MECHANISMS', 'PLAINTEXT'),
-                    'username' => env('KAFKA_USERNAME'),
-                    'password' => env('KAFKA_PASSWORD')
-                ],
-
-                'log_level' => env('KAFKA_LOG_LEVEL', (string) LOG_INFO),
+                'log_level' => env('KAFKA_DEBUG', false) ? (string)LOG_DEBUG : (string)LOG_INFO,
 
                 /*
                  | Choose if debug is enabled or not.
                  */
-                'debug' => env('KAFKA_DEBUG', false),
+                'debug' => env('KAFKA_DEBUG', false) ? 'all' : null,
             ]
         ]
     ],
+
+    'prefix' => env('KAFKA_PREFIX', env('APP_ENV', 'local') . '.'),
 
     'topics' => [
         // 'fact-products' => 'fact.products.1'
@@ -49,25 +44,12 @@ return [
 
     'consumers' => [
         /*
-         | Default listener
-        */
-        'default_listener' => env('KAFKA_CONSUMER_DEFAULT_LISTENER', 'default-listener'),
-
-        /*
          | Optional, defaults to empty array.
          | Array of middleware.
         */
         'middlewares' => [
             //
         ],
-
-        /*
-         | Kafka consumers belonging to the same consumer group share a group id.
-         | The consumers in a group then divides the topic partitions as fairly amongst themselves as possible by
-         | establishing that each partition is only consumed by a single consumer from the group.
-         | This config defines the consumer group id you want to use for your project.
-         */
-        'group_id' => env('KAFKA_CONSUMER_GROUP_ID', Str::slug(env('APP_NAME'))),
 
         /*
          | If you set enable.auto.commit (which is the default), then the consumer will automatically commit offsets periodically at the
@@ -80,6 +62,22 @@ return [
          | Kafka consume timeout in milliseconds.
          */
         'consume_timeout' => 20000,
+
+        /*
+         | Options for Kafka Consumer
+         */
+        'additional_options' => [
+            /*
+             | Kafka consumers belonging to the same consumer group share a group id.
+             | The consumers in a group then divides the topic partitions as fairly amongst themselves as possible by
+             | establishing that each partition is only consumed by a single consumer from the group.
+             | This config defines the consumer group id you want to use for your project.
+             */
+            'group.id' => env('KAFKA_CONSUMER_GROUP_ID', env('APP_NAME')),
+
+
+            'auto.offset.reset' => 'beginning',
+        ],
 
 
         'listeners' => [
@@ -108,11 +106,6 @@ return [
         ],
 
         /*
-         | Kafka supports 4 compression codecs: none , gzip , lz4 and snappy
-         */
-        'compression' => env('KAFKA_COMPRESSION_TYPE', 'snappy'),
-
-        /*
          | Optional, defaults to 5000.
          | Kafka producer flush timeout in milliseconds.
          */
@@ -123,6 +116,16 @@ return [
          | Kafka producer flush retries
          */
         'flush_retries' => 5,
+
+        /*
+         | Options for Kafka Producer
+         */
+        'additional_options' => [
+            /*
+             | Kafka supports 4 compression codecs: none , gzip , lz4 and snappy
+             */
+            'compression.codec' => env('KAFKA_PRODUCER_COMPRESSION_CODEC', 'snappy'),
+        ],
 
         'routes' => [
         //    App\Kafka\Messages\ProductMessage::class => [
