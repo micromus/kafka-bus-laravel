@@ -7,7 +7,7 @@ use Micromus\KafkaBus\Contracts\Messages\Message;
 interface ProducerStream
 {
     /**
-     * @param Message[] $messages
+     * @param  Message[]  $messages
      */
     public function handle(array $messages): void;
 }

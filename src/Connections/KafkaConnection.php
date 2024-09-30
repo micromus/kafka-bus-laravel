@@ -8,7 +8,6 @@ use Micromus\KafkaBus\Contracts\Producers\Producer;
 
 class KafkaConnection implements Connection
 {
-
     public function createProducer(string $topic, ProducerConfiguration $configuration): Producer
     {
         // TODO: Implement createProducer() method.

@@ -2,9 +2,9 @@
 
 namespace Micromus\KafkaBus;
 
+use Micromus\KafkaBus\Commands\KafkaBusCommand;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
-use Micromus\KafkaBus\Commands\KafkaBusCommand;
 
 class KafkaBusServiceProvider extends PackageServiceProvider
 {

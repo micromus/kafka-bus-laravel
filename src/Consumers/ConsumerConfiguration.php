@@ -8,6 +8,5 @@ readonly class ConsumerConfiguration
         public string $groupId,
         public bool $authCommit = true,
         public int $consumerTimeout = 2000
-    ) {
-    }
+    ) {}
 }

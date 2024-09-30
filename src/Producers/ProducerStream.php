@@ -13,8 +13,7 @@ class ProducerStream implements ProducerStreamContract
     public function __construct(
         protected ProducerContract $producer,
         protected MessagePipeline $messagePipeline
-    ) {
-    }
+    ) {}
 
     public function handle(array $messages): void
     {

@@ -3,8 +3,8 @@
 namespace Micromus\KafkaBus\Tests;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Orchestra\Testbench\TestCase as Orchestra;
 use Micromus\KafkaBus\KafkaBusServiceProvider;
+use Orchestra\Testbench\TestCase as Orchestra;
 
 class TestCase extends Orchestra
 {

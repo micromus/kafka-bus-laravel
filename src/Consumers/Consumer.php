@@ -18,10 +18,10 @@ class Consumer implements ConsumerContract
     public function __construct(
         protected KafkaConsumer $consumer,
         protected array $topicNames,
-        protected RetryRepeater $retryRepeater = new RetryRepeater(),
+        protected RetryRepeater $retryRepeater = new RetryRepeater,
         protected int $consumerTimeout = 2000
     ) {
-        $this->consumerMessageNormalizer = new ConsumerMessageConverter();
+        $this->consumerMessageNormalizer = new ConsumerMessageConverter;
         $this->consumer->subscribe($this->topicNames);
     }
 
@@ -43,8 +43,7 @@ class Consumer implements ConsumerContract
 
             return $this->consumerMessageNormalizer
                 ->fromKafka($message);
-        }
-        catch (Exception $exception) {
+        } catch (Exception $exception) {
             throw new ConsumerException($exception->getMessage(), $exception->getCode(), $exception);
         }
     }

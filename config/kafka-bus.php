@@ -81,18 +81,18 @@ return [
 
 
         'listeners' => [
-        //    'default-listener' => [
-        //        'middlewares' => [],
-        //        'auto_commit' => env('KAFKA_CONSUMER_AUTO_COMMIT', true), // Override global option, remove if not need
-        //        'consume_timeout' => 20000, // Override global option, remove if not need
-        //
-        //        'routes' => [
-        //            'fact-products' => [
-        //                'handler' => App\Kafka\Consumers\ProductsTopicConsumer::class,
-        //                'converter' => App\Kafka\Messages\Converters\ProductMessageConverter::class,
-        //            ],
-        //        ],
-        //    ],
+            //    'default-listener' => [
+            //        'middlewares' => [],
+            //        'auto_commit' => env('KAFKA_CONSUMER_AUTO_COMMIT', true), // Override global option, remove if not need
+            //        'consume_timeout' => 20000, // Override global option, remove if not need
+            //
+            //        'routes' => [
+            //            'fact-products' => [
+            //                'handler' => App\Kafka\Consumers\ProductsTopicConsumer::class,
+            //                'converter' => App\Kafka\Messages\Converters\ProductMessageConverter::class,
+            //            ],
+            //        ],
+            //    ],
         ],
     ],
 
@@ -128,15 +128,15 @@ return [
         ],
 
         'routes' => [
-        //    App\Kafka\Messages\ProductMessage::class => [
-        //        'topic_key' => 'fact-products',
-        //        'options' => [
-        //            'middlewares' => [],
-        //            'compression' => env('KAFKA_COMPRESSION_TYPE', 'snappy'), // Override global option, remove if not need
-        //            'flush_timeout' => 5000, // Override global option, remove if not need
-        //            'flush_retries' => 5, // Override global option, remove if not need
-        //        ]
-        //    ]
-        ]
-    ]
+            //    App\Kafka\Messages\ProductMessage::class => [
+            //        'topic_key' => 'fact-products',
+            //        'options' => [
+            //            'middlewares' => [],
+            //            'compression' => env('KAFKA_COMPRESSION_TYPE', 'snappy'), // Override global option, remove if not need
+            //            'flush_timeout' => 5000, // Override global option, remove if not need
+            //            'flush_retries' => 5, // Override global option, remove if not need
+            //        ]
+            //    ]
+        ],
+    ],
 ];

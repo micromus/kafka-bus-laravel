@@ -9,8 +9,7 @@ class BusFactory
     public function __construct(
         protected ThreadRegistry $streamRegistry,
         protected Repository $configRepository
-    ) {
-    }
+    ) {}
 
     public function create(): \Micromus\KafkaBus\Contracts\Bus\Bus
     {

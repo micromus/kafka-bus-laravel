@@ -10,8 +10,7 @@ class MessagePipeline implements MessagePipelineContract
 {
     public function __construct(
         protected array $middlewares = []
-    ) {
-    }
+    ) {}
 
     public function then(mixed $message, Closure $destination): mixed
     {

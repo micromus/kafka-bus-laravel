@@ -2,7 +2,4 @@
 
 namespace Micromus\KafkaBus\Producers\Middlewares;
 
-class SupportDatabaseTransactions
-{
-
-}
+class SupportDatabaseTransactions {}
