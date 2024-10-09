@@ -10,8 +10,8 @@ it('can create a topic registry', function () {
     config()->set('kafka-bus.topics', [
         'products' => [
             'name' => 'fact.products.1',
-            'partitions' => 5
-        ]
+            'partitions' => 5,
+        ],
     ]);
 
     /** @var TopicRegistry $topicRegistry */

@@ -9,15 +9,15 @@ it('can produce message to kafka', function () {
     config()->set('kafka-bus.topics', [
         'products' => [
             'name' => 'production.fact.products.1',
-            'partitions' => 5
-        ]
+            'partitions' => 5,
+        ],
     ]);
 
     config()->set('kafka-bus.producers.routes', [
         ProducerMessageFaker::class => [
             'topic_key' => 'products',
-            'options' => []
-        ]
+            'options' => [],
+        ],
     ]);
 
     resolve(Bus::class)

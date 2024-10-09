@@ -1,6 +1,5 @@
 <?php
 
-
 use Micromus\KafkaBus\Connections\KafkaConnection;
 use Micromus\KafkaBus\Connections\Registry\DriverRegistry;
 use Micromus\KafkaBus\Contracts\Connections\ConnectionRegistry;
@@ -18,7 +17,7 @@ it('resolve topic name', function () {
 
 it('can add new driver to driver registry', function () {
     app()->afterResolving(DriverRegistry::class, function (DriverRegistry $driverRegistry) {
-        $driverRegistry->add('test', fn() => new KafkaConnection([]));
+        $driverRegistry->add('test', fn () => new KafkaConnection([]));
     });
 
     $connection = resolve(DriverRegistry::class)

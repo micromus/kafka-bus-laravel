@@ -8,15 +8,15 @@ it('create publisher routes', function () {
     config()->set('kafka-bus.producers', [
         'additional_options' => [
             'test.option' => 'bar',
-            'not.override' => 'test-value'
+            'not.override' => 'test-value',
         ],
 
         'middlewares' => [
-            'MiddlewareClass'
+            'MiddlewareClass',
         ],
 
         'flush_timeout' => 10_000,
-        'flush_retries' => 10
+        'flush_retries' => 10,
     ]);
 
     config()->set('kafka-bus.producers.routes', [
@@ -29,13 +29,13 @@ it('create publisher routes', function () {
                 ],
 
                 'middlewares' => [
-                    'OtherMiddlewareClass'
+                    'OtherMiddlewareClass',
                 ],
 
                 'flush_timeout' => 15_000,
-                'flush_retries' => 15
-            ]
-        ]
+                'flush_retries' => 15,
+            ],
+        ],
     ]);
 
     /** @var PublisherRoutes $routes */

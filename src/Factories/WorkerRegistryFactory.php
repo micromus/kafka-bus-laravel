@@ -15,12 +15,11 @@ class WorkerRegistryFactory
 {
     public function __construct(
         protected Repository $configRepository
-    ) {
-    }
+    ) {}
 
     public function create(): WorkerRegistry
     {
-        $groupRegistry = new WorkerRegistry();
+        $groupRegistry = new WorkerRegistry;
         $globalOptions = $this->configRepository->get('kafka_bus.consumers', []);
         $workers = $this->configRepository->get('kafka-bus.consumers.groups', []);
 
@@ -38,7 +37,7 @@ class WorkerRegistryFactory
 
     protected function makeWorkerRoutes(string $workerName, array $routes): WorkerRoutes
     {
-        $workerRoutes = new WorkerRoutes();
+        $workerRoutes = new WorkerRoutes;
 
         foreach ($routes as $topicKey => $route) {
             $handlerClass = $route['handler']
@@ -67,7 +66,7 @@ class WorkerRegistryFactory
             'additional_options' => [
                 ...($globalOptions['additional_options'] ?? []),
                 ...($groupOptions['additional_options'] ?? []),
-            ]
+            ],
         ];
 
         return new Options(
