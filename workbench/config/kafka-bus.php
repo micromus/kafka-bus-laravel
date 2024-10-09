@@ -1,5 +1,7 @@
 <?php
 
+use Workbench\App\Kafka\Consumers\ProductsTopicConsumer;
+
 return [
     'default' => env('KAFKA_CONNECTION', 'kafka'),
 
@@ -35,13 +37,13 @@ return [
         ],
     ],
 
-    'topic_prefix' => env('KAFKA_PREFIX', env('APP_ENV', 'local').'.'),
+    'prefix' => env('KAFKA_PREFIX', env('APP_ENV', 'local').'.'),
 
     'topics' => [
-        //'products' => [
-        //    'name' => 'fact.products.1',
-        //    'partition' => (int) env('KAFKA_TOPIC_PRODUCTS_PARTITIONS', 1),
-        //]
+        'products' => [
+            'name' => 'fact.products.1',
+            'partition' => (int) env('KAFKA_TOPIC_PRODUCTS_PARTITIONS', 1),
+        ]
     ],
 
     'consumers' => [
@@ -93,40 +95,12 @@ return [
          */
         'max_time' => env('KAFKA_CONSUMER_MAX_TIME', -1),
 
-        /*
-         | This defines Workers that will be run in separate processes in order to
-         | subscribe to Apache Kafka topics.
-         */
         'workers' => [
-            /*
-             | This is worker name.
-             | To start Worker, run the command:
-             | php artisan kafka:consume default
-             */
             'default' => [
-                /*
-                 | Optional, defaults to -1.
-                 | The amount of time that will be listened to before disabling.
-                 */
-                'options' => [
-                    //'middlewares' => [],
-                    //'additional_options' => [],
-                    //'auto_commit' => false, // Override global option, remove if not need
-                    //'consume_timeout' => 20000, // Override global option, remove if not need
-                ],
-
-                //'max_messages' => 150_000, // // Override global option, remove if not need
-                //'max_time' => -1, // // Override global option, remove if not need
-
-                /*
-                 | A list of topics that will be subscribed to by the current employee.
-                 | For each of them, you need to create a PHP class that will handle Apache Kafka messages.
-                 */
                 'topics' => [
-                    //'products' => [
-                    //    'handler' => App\Kafka\Consumers\ProductsTopicConsumer::class,
-                    //    'message_factory' => App\Kafka\Messages\Factories\ProductMessageFactory::class,
-                    //],
+                    'products' => [
+                        'handler' => ProductsTopicConsumer::class,
+                    ],
                 ],
             ],
         ],
@@ -163,10 +137,6 @@ return [
             'compression.codec' => env('KAFKA_PRODUCER_COMPRESSION_CODEC', 'snappy'),
         ],
 
-        /*
-         | Optional, defaults to -1.
-         | The amount of time that will be listened to before disabling.
-         */
         'routes' => [
             //App\Kafka\Messages\ProductMessage::class => [
             //    'topic_key' => 'products',

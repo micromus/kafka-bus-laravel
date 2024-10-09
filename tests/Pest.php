@@ -1,5 +1,5 @@
 <?php
 
-use Micromus\KafkaBus\Tests\TestCase;
+use Micromus\KafkaBusLaravel\Tests\TestCase;
 
 uses(TestCase::class)->in(__DIR__);

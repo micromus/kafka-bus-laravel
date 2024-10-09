@@ -12,7 +12,7 @@
     failOnRisky="true"
     failOnEmptyTestSuite="true"
     beStrictAboutOutputDuringTests="true"
-    cacheDirectory=".phpunit.cache"
+    cacheDirectory="build/phpunit.cache"
     backupStaticProperties="false"
 >
     <testsuites>
@@ -28,4 +28,7 @@
             <directory suffix=".php">./src</directory>
         </include>
     </source>
+    <php>
+        <env name="KAFKA_CONNECTION" value="testing"/>
+    </php>
 </phpunit>
