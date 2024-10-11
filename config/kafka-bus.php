@@ -6,7 +6,7 @@ return [
     'connections' => [
         'testing' => [
             'driver' => 'null',
-            'options' => []
+            'options' => [],
         ],
 
         'kafka' => [

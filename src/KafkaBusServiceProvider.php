@@ -21,9 +21,9 @@ use Micromus\KafkaBus\Messages\MessagePipelineFactory;
 use Micromus\KafkaBus\Producers\ProducerStreamFactory;
 use Micromus\KafkaBus\Topics\TopicRegistry;
 use Micromus\KafkaBusLaravel\Commands\KafkaConsumeCommand;
-use Micromus\KafkaBusLaravel\Factories\WorkerRegistryFactory;
 use Micromus\KafkaBusLaravel\Factories\PublisherRoutesFactory;
 use Micromus\KafkaBusLaravel\Factories\TopicRegistryFactory;
+use Micromus\KafkaBusLaravel\Factories\WorkerRegistryFactory;
 use Micromus\KafkaBusLaravel\Resolvers\ContainerResolver;
 
 class KafkaBusServiceProvider extends ServiceProvider
@@ -69,14 +69,14 @@ class KafkaBusServiceProvider extends ServiceProvider
     protected function makeProducerStreamFactory(Application $app): ProducerStreamFactoryInterface
     {
         return new ProducerStreamFactory(
-            new MessagePipelineFactory(),
+            new MessagePipelineFactory,
         );
     }
 
     protected function makeConsumerStreamFactory(Application $app): ConsumerStreamFactoryInterface
     {
         return new ConsumerStreamFactory(
-            new MessagePipelineFactory(),
+            new MessagePipelineFactory,
             new ConsumerRouterFactory(
                 new ContainerResolver($app),
                 $app->make(TopicRegistry::class),
@@ -120,7 +120,7 @@ class KafkaBusServiceProvider extends ServiceProvider
 
     protected function makeDriverRegistry(): DriverRegistry
     {
-        return new DriverRegistry();
+        return new DriverRegistry;
     }
 
     protected function makeConnectionRegistry(Application $app): ConnectionRegistryInterface

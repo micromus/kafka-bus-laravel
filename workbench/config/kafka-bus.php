@@ -8,7 +8,7 @@ return [
     'connections' => [
         'testing' => [
             'driver' => 'null',
-            'options' => []
+            'options' => [],
         ],
 
         'kafka' => [
@@ -43,7 +43,7 @@ return [
         'products' => [
             'name' => 'fact.products.1',
             'partition' => (int) env('KAFKA_TOPIC_PRODUCTS_PARTITIONS', 1),
-        ]
+        ],
     ],
 
     'consumers' => [
