@@ -2,7 +2,6 @@
 
 namespace Micromus\KafkaBusLaravel;
 
-use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\ServiceProvider;
 use Micromus\KafkaBus\Bus;

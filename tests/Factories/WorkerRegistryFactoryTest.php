@@ -1,6 +1,7 @@
 <?php
 
 use Micromus\KafkaBusLaravel\Factories\WorkerRegistryFactory;
+
 use function PHPUnit\Framework\assertCount;
 use function PHPUnit\Framework\assertEquals;
 
@@ -14,18 +15,17 @@ it('create worker', function () {
                 ],
 
                 'middlewares' => [
-                    'OtherMiddlewareClass'
+                    'OtherMiddlewareClass',
                 ],
             ],
-
 
             'topics' => [
                 'products' => [
                     'handler' => 'HandlerClass',
                     'message_factory' => 'MessageFactoryClass',
-                ]
-            ]
-        ]
+                ],
+            ],
+        ],
     ]);
 
     /** @var \Micromus\KafkaBus\Bus\Listeners\Workers\Worker $worker */
