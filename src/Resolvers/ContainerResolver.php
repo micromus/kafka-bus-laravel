@@ -3,9 +3,9 @@
 namespace Micromus\KafkaBusLaravel\Resolvers;
 
 use Illuminate\Contracts\Container\Container;
-use Micromus\KafkaBus\Contracts\Resolver;
+use Micromus\KafkaBus\Interfaces\ResolverInterface;
 
-class ContainerResolver implements Resolver
+class ContainerResolver implements ResolverInterface
 {
     public function __construct(
         protected Container $container

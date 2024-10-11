@@ -5,7 +5,7 @@ use Micromus\KafkaBus\Topics\TopicRegistry;
 use Micromus\KafkaBusLaravel\Factories\TopicRegistryFactory;
 
 it('can create a topic registry', function () {
-    config()->set('kafka-bus.prefix', 'production.');
+    config()->set('kafka-bus.topic_prefix', 'production.');
 
     config()->set('kafka-bus.topics', [
         'products' => [

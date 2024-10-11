@@ -22,10 +22,10 @@ class WorkerRegistryFactory
     {
         $groupRegistry = new WorkerRegistry();
         $globalOptions = $this->configRepository->get('kafka_bus.consumers', []);
-        $workers = $this->configRepository->get('kafka-bus.consumers.groups', []);
+        $workers = $this->configRepository->get('kafka-bus.consumers.workers', []);
 
         foreach ($workers as $workerName => $worker) {
-            $routes = $this->makeWorkerRoutes($workerName, $worker['routes'] ?? []);
+            $routes = $this->makeWorkerRoutes($workerName, $worker['topics'] ?? []);
             $options = $this->makeOptions($worker['options'] ?? [], $globalOptions);
             $maxMessages = $worker['max_messages'] ?? -1;
             $maxTime = $worker['max_time'] ?? -1;
@@ -42,7 +42,7 @@ class WorkerRegistryFactory
 
         foreach ($routes as $topicKey => $route) {
             $handlerClass = $route['handler']
-                ?? throw new KafkaBusConfigurationException("Param [kafka-bus.consumers.groups.$workerName.routes.$topicKey.handler] is required");
+                ?? throw new KafkaBusConfigurationException("Param [kafka-bus.consumers.workers.$workerName.topics.$topicKey.handler] is required");
 
             $messageFactoryClass = $route['message_factory']
                 ?? NativeMessageFactory::class;

@@ -2,6 +2,7 @@
 
 namespace Micromus\KafkaBusLaravel;
 
+use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\ServiceProvider;
 use Micromus\KafkaBus\Bus;
@@ -12,10 +13,10 @@ use Micromus\KafkaBus\Connections\Registry\ConnectionRegistry;
 use Micromus\KafkaBus\Connections\Registry\DriverRegistry;
 use Micromus\KafkaBus\Consumers\ConsumerStreamFactory;
 use Micromus\KafkaBus\Consumers\Router\ConsumerRouterFactory;
-use Micromus\KafkaBus\Contracts\Bus\Bus as BusContract;
-use Micromus\KafkaBus\Contracts\Connections\ConnectionRegistry as ConnectionRegistryContract;
-use Micromus\KafkaBus\Contracts\Consumers\ConsumerStreamFactory as ConsumerStreamFactoryContract;
-use Micromus\KafkaBus\Contracts\Producers\ProducerStreamFactory as ProducerStreamFactoryContract;
+use Micromus\KafkaBus\Interfaces\Bus\BusInterface;
+use Micromus\KafkaBus\Interfaces\Connections\ConnectionRegistryInterface;
+use Micromus\KafkaBus\Interfaces\Consumers\ConsumerStreamFactoryInterface;
+use Micromus\KafkaBus\Interfaces\Producers\ProducerStreamFactoryInterface;
 use Micromus\KafkaBus\Messages\MessagePipelineFactory;
 use Micromus\KafkaBus\Producers\ProducerStreamFactory;
 use Micromus\KafkaBus\Topics\TopicRegistry;
@@ -33,17 +34,17 @@ class KafkaBusServiceProvider extends ServiceProvider
 
         $this->app->bind(TopicRegistry::class, $this->makeTopicRegistry(...));
 
-        $this->app->bind(ProducerStreamFactoryContract::class, $this->makeProducerStreamFactory(...));
+        $this->app->bind(ProducerStreamFactoryInterface::class, $this->makeProducerStreamFactory(...));
         $this->app->bind(PublisherFactory::class, $this->makePublisherFactory(...));
 
-        $this->app->bind(ConsumerStreamFactoryContract::class, $this->makeConsumerStreamFactory(...));
+        $this->app->bind(ConsumerStreamFactoryInterface::class, $this->makeConsumerStreamFactory(...));
         $this->app->bind(ListenerFactory::class, $this->makeListenerFactory(...));
 
         $this->app->singleton(DriverRegistry::class, $this->makeDriverRegistry(...));
         $this->app->singleton(ThreadRegistry::class, $this->makeThreadRegistry(...));
-        $this->app->singleton(ConnectionRegistryContract::class, $this->makeConnectionRegistry(...));
+        $this->app->singleton(ConnectionRegistryInterface::class, $this->makeConnectionRegistry(...));
 
-        $this->app->singleton(BusContract::class, $this->makeBus(...));
+        $this->app->singleton(BusInterface::class, $this->makeBus(...));
     }
 
     public function boot(): void
@@ -65,14 +66,14 @@ class KafkaBusServiceProvider extends ServiceProvider
             ->create();
     }
 
-    protected function makeProducerStreamFactory(Application $app): ProducerStreamFactoryContract
+    protected function makeProducerStreamFactory(Application $app): ProducerStreamFactoryInterface
     {
         return new ProducerStreamFactory(
             new MessagePipelineFactory(),
         );
     }
 
-    protected function makeConsumerStreamFactory(Application $app): ConsumerStreamFactoryContract
+    protected function makeConsumerStreamFactory(Application $app): ConsumerStreamFactoryInterface
     {
         return new ConsumerStreamFactory(
             new MessagePipelineFactory(),
@@ -86,7 +87,7 @@ class KafkaBusServiceProvider extends ServiceProvider
     protected function makePublisherFactory(Application $app): PublisherFactory
     {
         return new PublisherFactory(
-            $app->make(ProducerStreamFactoryContract::class),
+            $app->make(ProducerStreamFactoryInterface::class),
             $app->make(TopicRegistry::class),
             $app->make(PublisherRoutesFactory::class)->create()
         );
@@ -95,7 +96,7 @@ class KafkaBusServiceProvider extends ServiceProvider
     protected function makeListenerFactory(Application $app): ListenerFactory
     {
         return new ListenerFactory(
-            $app->make(ConsumerStreamFactoryContract::class),
+            $app->make(ConsumerStreamFactoryInterface::class),
             $app->make(WorkerRegistryFactory::class)->create()
         );
     }
@@ -103,13 +104,13 @@ class KafkaBusServiceProvider extends ServiceProvider
     protected function makeThreadRegistry(Application $app): ThreadRegistry
     {
         return new ThreadRegistry(
-            $app->make(ConnectionRegistryContract::class),
+            $app->make(ConnectionRegistryInterface::class),
             $app->make(PublisherFactory::class),
             $app->make(ListenerFactory::class),
         );
     }
 
-    protected function makeBus(Application $app): BusContract
+    protected function makeBus(Application $app): BusInterface
     {
         return new Bus(
             $app->make(ThreadRegistry::class),
@@ -122,7 +123,7 @@ class KafkaBusServiceProvider extends ServiceProvider
         return new DriverRegistry();
     }
 
-    protected function makeConnectionRegistry(Application $app): ConnectionRegistryContract
+    protected function makeConnectionRegistry(Application $app): ConnectionRegistryInterface
     {
         return new ConnectionRegistry(
             $app->make(DriverRegistry::class),

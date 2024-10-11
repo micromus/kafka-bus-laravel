@@ -1,7 +1,7 @@
 <?php
 
 use Micromus\KafkaBus\Bus\Publishers\Router\PublisherRoutes;
-use Micromus\KafkaBus\Testing\ProducerMessageFaker;
+use Micromus\KafkaBus\Testing\Messages\ProducerMessageFaker;
 use Micromus\KafkaBusLaravel\Factories\PublisherRoutesFactory;
 
 it('create publisher routes', function () {

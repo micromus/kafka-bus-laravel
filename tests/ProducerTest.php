@@ -1,7 +1,8 @@
 <?php
 
-use Micromus\KafkaBus\Contracts\Bus\Bus;
-use Micromus\KafkaBus\Testing\ProducerMessageFaker;
+
+use Micromus\KafkaBus\Interfaces\Bus\BusInterface;
+use Micromus\KafkaBus\Testing\Messages\ProducerMessageFaker;
 
 it('can produce message to kafka', function () {
     $produceMessage = new ProducerMessageFaker('test-message');
@@ -20,6 +21,6 @@ it('can produce message to kafka', function () {
         ]
     ]);
 
-    resolve(Bus::class)
+    resolve(BusInterface::class)
         ->publish($produceMessage);
 });

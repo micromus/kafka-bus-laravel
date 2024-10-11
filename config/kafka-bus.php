@@ -20,8 +20,8 @@ return [
                 /*
                  | Default security protocol
                  */
-                'security.protocol' => env('KAFKA_SECURITY_PROTOCOL', 'plaintext'),
-                'sasl.mechanisms' => env('KAFKA_SASL_MECHANISMS'),
+                'security.protocol' => env('KAFKA_SECURITY_PROTOCOL', 'SASL_PLAINTEXT'),
+                'sasl.mechanisms' => env('KAFKA_SASL_MECHANISMS', 'PLAIN'),
                 'sasl.username' => env('KAFKA_SASL_USERNAME'),
                 'sasl.password' => env('KAFKA_SASL_PASSWORD'),
 

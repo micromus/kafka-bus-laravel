@@ -3,11 +3,11 @@
 
 use Micromus\KafkaBus\Connections\KafkaConnection;
 use Micromus\KafkaBus\Connections\Registry\DriverRegistry;
-use Micromus\KafkaBus\Contracts\Connections\ConnectionRegistry;
+use Micromus\KafkaBus\Interfaces\Connections\ConnectionRegistryInterface;
 use Micromus\KafkaBus\Topics\TopicRegistry;
 
 it('resolve topic name', function () {
-    config()->set('kafka-bus.prefix', 'production');
+    config()->set('kafka-bus.topic_prefix', 'production');
     config()->set('kafka-bus.topics', ['products' => ['name' => '.fact.products.1']]);
 
     $topicRegistry = resolve(TopicRegistry::class);
@@ -29,7 +29,7 @@ it('can add new driver to driver registry', function () {
 });
 
 it('can create connection', function () {
-    $connection = resolve(ConnectionRegistry::class)
+    $connection = resolve(ConnectionRegistryInterface::class)
         ->connection('kafka');
 
     expect($connection)
