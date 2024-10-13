@@ -11,11 +11,12 @@ class PublisherRoutesFactory
 {
     public function __construct(
         protected Repository $configRepository
-    ) {}
+    ) {
+    }
 
     public function create(): PublisherRoutes
     {
-        $publisherRoutes = new PublisherRoutes;
+        $publisherRoutes = new PublisherRoutes();
         $globalOptions = $this->configRepository->get('kafka-bus.producers', []);
         $routes = $this->configRepository->get('kafka-bus.producers.routes', []);
 

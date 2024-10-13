@@ -11,11 +11,12 @@ class TopicRegistryFactory
 {
     public function __construct(
         protected Repository $configRepository
-    ) {}
+    ) {
+    }
 
     public function create(): TopicRegistry
     {
-        $topicRegistry = new TopicRegistry;
+        $topicRegistry = new TopicRegistry();
 
         $prefix = $this->configRepository->get('kafka-bus.topic_prefix');
         $topics = $this->configRepository->get('kafka-bus.topics', []);

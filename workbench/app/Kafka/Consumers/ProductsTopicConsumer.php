@@ -9,7 +9,8 @@ class ProductsTopicConsumer
 {
     public function __construct(
         protected LoggerInterface $logger
-    ) {}
+    ) {
+    }
 
     public function execute(ConsumerMessage $message): void
     {

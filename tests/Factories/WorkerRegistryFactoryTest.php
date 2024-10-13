@@ -1,6 +1,7 @@
 <?php
 
 use Micromus\KafkaBusLaravel\Factories\WorkerRegistryFactory;
+
 use function PHPUnit\Framework\assertCount;
 use function PHPUnit\Framework\assertEquals;
 
