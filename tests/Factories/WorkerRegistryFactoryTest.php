@@ -15,18 +15,17 @@ it('create worker', function () {
                 ],
 
                 'middlewares' => [
-                    'OtherMiddlewareClass'
+                    'OtherMiddlewareClass',
                 ],
             ],
-
 
             'topics' => [
                 'products' => [
                     'handler' => 'HandlerClass',
                     'message_factory' => 'MessageFactoryClass',
-                ]
-            ]
-        ]
+                ],
+            ],
+        ],
     ]);
 
     /** @var \Micromus\KafkaBus\Bus\Listeners\Workers\Worker $worker */

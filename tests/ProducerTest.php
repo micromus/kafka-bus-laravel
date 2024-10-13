@@ -1,6 +1,5 @@
 <?php
 
-
 use Micromus\KafkaBus\Interfaces\Bus\BusInterface;
 use Micromus\KafkaBus\Testing\Messages\ProducerMessageFaker;
 
