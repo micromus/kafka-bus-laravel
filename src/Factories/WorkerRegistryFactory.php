@@ -21,16 +21,15 @@ class WorkerRegistryFactory
     public function create(): WorkerRegistry
     {
         $groupRegistry = new WorkerRegistry();
-        $globalOptions = $this->configRepository->get('kafka_bus.consumers', []);
+        $globalOptions = $this->configRepository->get('kafka-bus.consumers', []);
         $workers = $this->configRepository->get('kafka-bus.consumers.workers', []);
 
         foreach ($workers as $workerName => $worker) {
             $routes = $this->makeWorkerRoutes($workerName, $worker['topics'] ?? []);
             $options = $this->makeOptions($worker['options'] ?? [], $globalOptions);
-            $maxMessages = $worker['max_messages'] ?? -1;
-            $maxTime = $worker['max_time'] ?? -1;
+            $maxMessages = $worker['max_messages'] ?? ($globalOptions['max_messages'] ?? -1);
 
-            $groupRegistry->add($workerName, new Worker($routes, $options, $maxMessages, $maxTime));
+            $groupRegistry->add($workerName, new Worker($routes, $options, $maxMessages));
         }
 
         return $groupRegistry;
@@ -53,20 +52,20 @@ class WorkerRegistryFactory
         return $workerRoutes;
     }
 
-    protected function makeOptions(array $groupOptions, array $globalOptions): Options
+    protected function makeOptions(array $workerOptions, array $globalOptions): Options
     {
         $options = [
             ...$globalOptions,
-            ...$groupOptions,
+            ...$workerOptions,
 
             'middlewares' => [
                 ...($globalOptions['middlewares'] ?? []),
-                ...($groupOptions['middlewares'] ?? []),
+                ...($workerOptions['middlewares'] ?? []),
             ],
 
             'additional_options' => [
                 ...($globalOptions['additional_options'] ?? []),
-                ...($groupOptions['additional_options'] ?? []),
+                ...($workerOptions['additional_options'] ?? []),
             ],
         ];
 
@@ -74,7 +73,7 @@ class WorkerRegistryFactory
             additionalOptions: $options['additional_options'],
             middlewares: $options['middlewares'],
             autoCommit: $options['auto_commit'] ?? true,
-            consumerTimeout: $options['consumer_timeout'] ?? 2000,
+            consumerTimeout: $options['consumer_timeout'] ?? 5000,
         );
     }
 }

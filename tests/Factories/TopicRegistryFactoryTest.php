@@ -8,10 +8,7 @@ it('can create a topic registry', function () {
     config()->set('kafka-bus.topic_prefix', 'production.');
 
     config()->set('kafka-bus.topics', [
-        'products' => [
-            'name' => 'fact.products.1',
-            'partitions' => 5,
-        ],
+        'products' => 'fact.products.1',
     ]);
 
     /** @var TopicRegistry $topicRegistry */
@@ -22,6 +19,5 @@ it('can create a topic registry', function () {
 
     expect($topic)->toBeInstanceOf(Topic::class)
         ->and($topic->name)->toBe('production.fact.products.1')
-        ->and($topic->key)->toBe('products')
-        ->and($topic->partitions)->toBe(5);
+        ->and($topic->key)->toBe('products');
 });

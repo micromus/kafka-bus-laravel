@@ -20,7 +20,7 @@
         "ext-pcntl": "*",
         "ext-rdkafka": "*",
         "illuminate/contracts": "^10.0||^11.0",
-        "micromus/kafka-bus": "^0.2.0"
+        "micromus/kafka-bus": "^0.3.0"
     },
     "require-dev": {
         "larastan/larastan": "^2.9",

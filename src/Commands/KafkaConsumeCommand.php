@@ -6,7 +6,6 @@ use Illuminate\Console\Command;
 use Micromus\KafkaBus\Bus\Listeners\Listener;
 use Micromus\KafkaBus\Exceptions\Consumers\ConsumerException;
 use Micromus\KafkaBus\Exceptions\Consumers\MessagesCompletedConsumerException;
-use Micromus\KafkaBus\Exceptions\Consumers\TimeoutConsumerException;
 use Micromus\KafkaBus\Interfaces\Bus\BusInterface;
 use Symfony\Component\Console\Command\SignalableCommandInterface;
 
@@ -30,9 +29,6 @@ final class KafkaConsumeCommand extends Command implements SignalableCommandInte
         }
         catch (MessagesCompletedConsumerException) {
             $this->info('Consumer stopped. Consumer exceeded the maximum number of messages read');
-        }
-        catch (TimeoutConsumerException) {
-            $this->info('Consumer stopped. Consumer exceeded the maximum amount of time');
         }
         catch (ConsumerException $exception) {
             $this->error("Consumer stopped. Error: {$exception->getMessage()}");

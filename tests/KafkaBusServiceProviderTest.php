@@ -7,7 +7,7 @@ use Micromus\KafkaBus\Topics\TopicRegistry;
 
 it('resolve topic name', function () {
     config()->set('kafka-bus.topic_prefix', 'production');
-    config()->set('kafka-bus.topics', ['products' => ['name' => '.fact.products.1']]);
+    config()->set('kafka-bus.topics', ['products' => '.fact.products.1']);
 
     $topicRegistry = resolve(TopicRegistry::class);
 

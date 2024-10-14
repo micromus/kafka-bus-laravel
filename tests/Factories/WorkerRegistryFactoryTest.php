@@ -6,6 +6,21 @@ use function PHPUnit\Framework\assertCount;
 use function PHPUnit\Framework\assertEquals;
 
 it('create worker', function () {
+    config()->set('kafka-bus.consumers', [
+        'additional_options' => [
+            'test.option' => 'bar',
+            'not.override' => 'test-value',
+        ],
+
+        'middlewares' => [
+            'MiddlewareClass',
+        ],
+
+        'consume_timeout' => 5_000,
+        'auto_commit' => true,
+        'max_messages' => 150_000,
+    ]);
+
     config()->set('kafka-bus.consumers.workers', [
         'default-worker' => [
             'options' => [
@@ -35,10 +50,14 @@ it('create worker', function () {
 
     assertEquals($worker->options->additionalOptions, [
         'test.option' => 'foo',
+        'not.override' => 'test-value',
         'new.option' => 'bar',
     ]);
 
-    assertEquals($worker->options->middlewares, ['OtherMiddlewareClass']);
+    assertEquals($worker->options->consumerTimeout, 5_000);
+    assertEquals($worker->maxMessages, 150_000);
+
+    assertEquals($worker->options->middlewares, ['MiddlewareClass', 'OtherMiddlewareClass']);
 
     $routes = $worker->routes->all();
 

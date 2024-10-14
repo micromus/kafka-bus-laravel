@@ -38,10 +38,7 @@ return [
     'topic_prefix' => env('KAFKA_PREFIX', env('APP_ENV', 'local').'.'),
 
     'topics' => [
-        //'products' => [
-        //    'name' => 'fact.products.1',
-        //    'partition' => (int) env('KAFKA_TOPIC_PRODUCTS_PARTITIONS', 1),
-        //]
+        //'products' => 'fact.products.1',
     ],
 
     'consumers' => [
@@ -60,13 +57,14 @@ return [
         'auto_commit' => env('KAFKA_CONSUMER_AUTO_COMMIT', true),
 
         /*
-         | Optional, defaults to 20000.
+         | Optional, defaults to 5000.
          | Kafka consume timeout in milliseconds.
          */
-        'consume_timeout' => 20000,
+        'consume_timeout' => 5_000,
 
         /*
          | Options for Kafka Consumer
+         | https://github.com/confluentinc/librdkafka/blob/master/CONFIGURATION.md
          */
         'additional_options' => [
             /*
@@ -77,6 +75,21 @@ return [
              */
             'group.id' => env('KAFKA_CONSUMER_GROUP_ID', env('APP_NAME')),
 
+            /*
+             | Maximum allowed time between calls to consume messages for high-level consumers.
+             */
+            'max.poll.interval.ms' => env('KAFKA_MAX_POLL_INTERVAL_MS', 300_000),
+
+            /*
+             | Client group session and failure detection timeout.
+             */
+            'session.timeout.ms' => env('KAFKA_SESSION_TIMEOUT_MS', 45_000),
+
+            /*
+             | Group session keepalive heartbeat interval.
+             */
+            'heartbeat.interval.ms' => env('KAFKA_HEARTBEAT_INTERVAL_MS', 3_000),
+
             'auto.offset.reset' => 'beginning',
         ],
 
@@ -85,13 +98,7 @@ return [
          | The number of messages that will be listened
          | to before is disabled.
          */
-        'max_messages' => env('KAFKA_CONSUMER_MAX_MESSAGES', 150_000),
-
-        /*
-         | Optional, defaults to -1.
-         | The amount of time that will be listened to before disabling.
-         */
-        'max_time' => env('KAFKA_CONSUMER_MAX_TIME', -1),
+        'max_messages' => env('KAFKA_CONSUMER_MAX_MESSAGES', -1),
 
         /*
          | This defines Workers that will be run in separate processes in order to
@@ -116,7 +123,6 @@ return [
                 ],
 
                 //'max_messages' => 150_000, // // Override global option, remove if not need
-                //'max_time' => -1, // // Override global option, remove if not need
 
                 /*
                  | A list of topics that will be subscribed to by the current employee.

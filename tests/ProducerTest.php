@@ -7,10 +7,7 @@ it('can produce message to kafka', function () {
     $produceMessage = new ProducerMessageFaker('test-message');
 
     config()->set('kafka-bus.topics', [
-        'products' => [
-            'name' => 'production.fact.products.1',
-            'partitions' => 5,
-        ],
+        'products' => 'production.fact.products.1',
     ]);
 
     config()->set('kafka-bus.producers.routes', [
