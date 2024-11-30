@@ -94,13 +94,6 @@ return [
         ],
 
         /*
-         | Optional, defaults to -1.
-         | The number of messages that will be listened
-         | to before is disabled.
-         */
-        'max_messages' => env('KAFKA_CONSUMER_MAX_MESSAGES', -1),
-
-        /*
          | This defines Workers that will be run in separate processes in order to
          | subscribe to Apache Kafka topics.
          */
@@ -122,23 +115,37 @@ return [
                     //'consume_timeout' => 20000, // Override global option, remove if not need
                 ],
 
-                //'max_messages' => 150_000, // // Override global option, remove if not need
-
                 /*
                  | A list of topics that will be subscribed to by the current employee.
                  | For each of them, you need to create a PHP class that will handle Apache Kafka messages.
                  */
                 'topics' => [
-                    //'products' => [
-                    //    'handler' => App\Kafka\Consumers\ProductsTopicConsumer::class,
-                    //    'message_factory' => App\Kafka\Messages\Factories\ProductMessageFactory::class,
-                    //],
+                    //'products' => App\Kafka\Consumers\ProductsTopicConsumer::class
                 ],
             ],
+
+            // consume one topic when topic key == worker name
+            //'products' => App\Kafka\Consumers\ProductsTopicConsumer::class,
+
+            // consume one topic with options and topic key == worker name
+            //'products' => [
+            //    'options' => [],
+            //    'handler' => App\Kafka\Consumers\ProductsTopicConsumer::class,
+            //],
+
+            // consume one topic when topic key != worker name
+            //'products-other-name' => [
+            //    'options' => [],
+            //    'topic_key' => 'products',
+            //    'handler' => App\Kafka\Consumers\ProductsTopicConsumer::class,
+            //],
         ],
     ],
 
     'producers' => [
+
+        'stream_factory' => Micromus\KafkaBusLaravel\Producers\LaravelProducerStreamFactory::class,
+
         /*
          | Optional, defaults to empty array.
          | Array of middleware.

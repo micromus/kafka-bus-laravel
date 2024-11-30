@@ -11,13 +11,16 @@ use Micromus\KafkaBus\Bus\ThreadRegistry;
 use Micromus\KafkaBus\Connections\Registry\ConnectionRegistry;
 use Micromus\KafkaBus\Connections\Registry\DriverRegistry;
 use Micromus\KafkaBus\Consumers\ConsumerStreamFactory;
+use Micromus\KafkaBus\Consumers\Messages\ConsumerMessageHandlerFactory;
 use Micromus\KafkaBus\Consumers\Router\ConsumerRouterFactory;
 use Micromus\KafkaBus\Interfaces\Bus\BusInterface;
 use Micromus\KafkaBus\Interfaces\Connections\ConnectionRegistryInterface;
 use Micromus\KafkaBus\Interfaces\Consumers\ConsumerStreamFactoryInterface;
 use Micromus\KafkaBus\Interfaces\Producers\ProducerStreamFactoryInterface;
+use Micromus\KafkaBus\Interfaces\ResolverInterface;
 use Micromus\KafkaBus\Messages\MessagePipelineFactory;
 use Micromus\KafkaBus\Producers\ProducerStreamFactory;
+use Micromus\KafkaBus\Support\Resolvers\NativeResolver;
 use Micromus\KafkaBus\Topics\TopicRegistry;
 use Micromus\KafkaBusLaravel\Commands\KafkaConsumeCommand;
 use Micromus\KafkaBusLaravel\Factories\PublisherRoutesFactory;
@@ -33,7 +36,7 @@ class KafkaBusServiceProvider extends ServiceProvider
 
         $this->app->bind(TopicRegistry::class, $this->makeTopicRegistry(...));
 
-        $this->app->bind(ProducerStreamFactoryInterface::class, $this->makeProducerStreamFactory(...));
+        $this->app->bind(ProducerStreamFactoryInterface::class, $this->app['config']->get('kafka-bus.producers.stream_factory'));
         $this->app->bind(PublisherFactory::class, $this->makePublisherFactory(...));
 
         $this->app->bind(ConsumerStreamFactoryInterface::class, $this->makeConsumerStreamFactory(...));
@@ -67,18 +70,18 @@ class KafkaBusServiceProvider extends ServiceProvider
 
     protected function makeProducerStreamFactory(Application $app): ProducerStreamFactoryInterface
     {
-        return new ProducerStreamFactory(
-            new MessagePipelineFactory(),
-        );
+        return new ProducerStreamFactory(new MessagePipelineFactory(new ContainerResolver($app)));
     }
 
     protected function makeConsumerStreamFactory(Application $app): ConsumerStreamFactoryInterface
     {
         return new ConsumerStreamFactory(
-            new MessagePipelineFactory(),
-            new ConsumerRouterFactory(
-                new ContainerResolver($app),
-                $app->make(TopicRegistry::class),
+            new ConsumerMessageHandlerFactory(
+                new MessagePipelineFactory(new ContainerResolver($app)),
+                new ConsumerRouterFactory(
+                    new ContainerResolver($app),
+                    $app->make(TopicRegistry::class)
+                )
             )
         );
     }

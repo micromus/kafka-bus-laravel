@@ -5,6 +5,7 @@ namespace Micromus\KafkaBusLaravel\Factories;
 use Illuminate\Config\Repository;
 use Micromus\KafkaBus\Bus\Publishers\Router\Options;
 use Micromus\KafkaBus\Bus\Publishers\Router\PublisherRoutes;
+use Micromus\KafkaBus\Bus\Publishers\Router\Route;
 use Micromus\KafkaBusLaravel\Exceptions\KafkaBusConfigurationException;
 
 class PublisherRoutesFactory
@@ -24,7 +25,8 @@ class PublisherRoutesFactory
             $topicKey = $route['topic_key']
                 ?? throw new KafkaBusConfigurationException("Param [kafka-bus.producers.routes.$messageClass.topic_key] is required]");
 
-            $publisherRoutes->add($messageClass, $topicKey, $this->makeOptions($route['options'] ?? [], $globalOptions));
+            $publisherRoute = new Route($messageClass, $topicKey, $this->makeOptions($route['options'] ?? [], $globalOptions));
+            $publisherRoutes->add($publisherRoute);
         }
 
         return $publisherRoutes;

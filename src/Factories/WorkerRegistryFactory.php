@@ -25,28 +25,60 @@ class WorkerRegistryFactory
         $workers = $this->configRepository->get('kafka-bus.consumers.workers', []);
 
         foreach ($workers as $workerName => $worker) {
-            $routes = $this->makeWorkerRoutes($workerName, $worker['topics'] ?? []);
-            $options = $this->makeOptions($worker['options'] ?? [], $globalOptions);
-            $maxMessages = $worker['max_messages'] ?? ($globalOptions['max_messages'] ?? -1);
+            if (is_string($worker)) {
+                $groupRegistry->add($this->createWorker($workerName, $worker, $globalOptions));
 
-            $groupRegistry->add($workerName, new Worker($routes, $options, $maxMessages));
+                continue;
+            }
+
+            if (isset($worker['handler'])) {
+                $groupRegistry->add($this->createWorkerWithOneTopic($workerName, $worker, $globalOptions));
+
+                continue;
+            }
+
+            $groupRegistry->add($this->createWorkerWithMultiplyTopics($workerName, $worker, $globalOptions));
         }
 
         return $groupRegistry;
     }
 
-    protected function makeWorkerRoutes(string $workerName, array $routes): WorkerRoutes
+    private function createWorker(string $topicKey, string $handlerClass, array $globalOptions): Worker
+    {
+        return new Worker(
+            name:  $topicKey,
+            routes: $this->makeWorkerRoutes([$topicKey => $handlerClass]),
+            options: $this->makeOptions([], $globalOptions)
+        );
+    }
+
+    private function createWorkerWithMultiplyTopics(string $workerName, array $worker, array $globalOptions): Worker
+    {
+        return new Worker(
+            name:  $workerName,
+            routes: $this->makeWorkerRoutes($worker['topics'] ?? []),
+            options: $this->makeOptions($worker['options'] ?? [], $globalOptions)
+        );
+    }
+
+    private function createWorkerWithOneTopic(string $workerName, array $worker, array $globalOptions): Worker
+    {
+        $topicKey = $worker['topic_key'] ?? $workerName;
+        $handlerClass = $worker['handler'];
+
+        return new Worker(
+            name:  $workerName,
+            routes: $this->makeWorkerRoutes([$topicKey => $handlerClass]),
+            options: $this->makeOptions($worker['options'] ?? [], $globalOptions)
+        );
+    }
+
+    protected function makeWorkerRoutes(array $routes): WorkerRoutes
     {
         $workerRoutes = new WorkerRoutes();
 
-        foreach ($routes as $topicKey => $route) {
-            $handlerClass = $route['handler']
-                ?? throw new KafkaBusConfigurationException("Param [kafka-bus.consumers.workers.$workerName.topics.$topicKey.handler] is required");
-
-            $messageFactoryClass = $route['message_factory']
-                ?? NativeMessageFactory::class;
-
-            $workerRoutes->add(new Route($topicKey, $handlerClass, $messageFactoryClass));
+        foreach ($routes as $topicKey => $handlerClass) {
+            $workerRoutes->add(new Route($topicKey, $handlerClass));
         }
 
         return $workerRoutes;
