@@ -35,6 +35,9 @@ final class ConsumerMessageFailedRepository implements ConsumerMessageFailedRepo
     {
         $messageFailed = $this->messageFailedConverter->convert($message);
         $messageFailed->save();
+
+        return $this->failedConsumerMessageConverter
+            ->convert($messageFailed);
     }
 
     public function delete(string $id): void
