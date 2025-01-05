@@ -13,6 +13,7 @@ it('create worker', function () {
         ],
 
         'middlewares' => [
+            'FirstMiddlewareOnlyGlobal',
             'MiddlewareClass',
         ],
 
@@ -29,6 +30,7 @@ it('create worker', function () {
                 ],
 
                 'middlewares' => [
+                    'FirstMiddlewareOnlyGlobal',
                     'OtherMiddlewareClass',
                 ],
             ],
@@ -52,7 +54,7 @@ it('create worker', function () {
 
     assertEquals($worker->options->consumerTimeout, 5_000);
 
-    assertEquals($worker->options->middlewares, ['MiddlewareClass', 'OtherMiddlewareClass']);
+    assertEquals($worker->options->middlewares, ['MiddlewareClass', 'FirstMiddlewareOnlyGlobal', 'OtherMiddlewareClass']);
 
     $routes = $worker->routes->all();
 
@@ -109,6 +111,7 @@ it('create worker with consume one topic', function () {
         ],
 
         'middlewares' => [
+            'FirstMiddlewareOnlyGlobal',
             'MiddlewareClass',
         ],
 
@@ -125,6 +128,7 @@ it('create worker with consume one topic', function () {
                 ],
 
                 'middlewares' => [
+                    'FirstMiddlewareOnlyGlobal',
                     'OtherMiddlewareClass',
                 ],
             ],
@@ -146,7 +150,7 @@ it('create worker with consume one topic', function () {
 
     assertEquals($worker->options->consumerTimeout, 5_000);
 
-    assertEquals($worker->options->middlewares, ['MiddlewareClass', 'OtherMiddlewareClass']);
+    assertEquals($worker->options->middlewares, ['MiddlewareClass', 'FirstMiddlewareOnlyGlobal', 'OtherMiddlewareClass']);
 
     $routes = $worker->routes->all();
 
@@ -163,6 +167,7 @@ it('create worker with consume one topic with custom topic key', function () {
         ],
 
         'middlewares' => [
+            'FirstMiddlewareOnlyGlobal',
             'MiddlewareClass',
         ],
 
@@ -179,6 +184,7 @@ it('create worker with consume one topic with custom topic key', function () {
                 ],
 
                 'middlewares' => [
+                    'FirstMiddlewareOnlyGlobal',
                     'OtherMiddlewareClass',
                 ],
             ],
@@ -201,7 +207,7 @@ it('create worker with consume one topic with custom topic key', function () {
 
     assertEquals($worker->options->consumerTimeout, 5_000);
 
-    assertEquals($worker->options->middlewares, ['MiddlewareClass', 'OtherMiddlewareClass']);
+    assertEquals($worker->options->middlewares, ['MiddlewareClass', 'FirstMiddlewareOnlyGlobal', 'OtherMiddlewareClass']);
 
     $routes = $worker->routes->all();
 

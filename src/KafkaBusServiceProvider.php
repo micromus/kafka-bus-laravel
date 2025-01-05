@@ -3,30 +3,27 @@
 namespace Micromus\KafkaBusLaravel;
 
 use Illuminate\Foundation\Application;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\ServiceProvider;
 use Micromus\KafkaBus\Bus;
 use Micromus\KafkaBus\Bus\Listeners\ListenerFactory;
 use Micromus\KafkaBus\Bus\Publishers\PublisherFactory;
 use Micromus\KafkaBus\Bus\ThreadRegistry;
+use Micromus\KafkaBus\BusLogger;
 use Micromus\KafkaBus\Connections\Registry\ConnectionRegistry;
 use Micromus\KafkaBus\Connections\Registry\DriverRegistry;
-use Micromus\KafkaBus\Consumers\ConsumerStreamFactory;
-use Micromus\KafkaBus\Consumers\Messages\ConsumerMessageHandlerFactory;
-use Micromus\KafkaBus\Consumers\Router\ConsumerRouterFactory;
 use Micromus\KafkaBus\Interfaces\Bus\BusInterface;
+use Micromus\KafkaBus\Interfaces\BusLoggerInterface;
 use Micromus\KafkaBus\Interfaces\Connections\ConnectionRegistryInterface;
 use Micromus\KafkaBus\Interfaces\Consumers\ConsumerStreamFactoryInterface;
 use Micromus\KafkaBus\Interfaces\Producers\ProducerStreamFactoryInterface;
-use Micromus\KafkaBus\Interfaces\ResolverInterface;
-use Micromus\KafkaBus\Messages\MessagePipelineFactory;
-use Micromus\KafkaBus\Producers\ProducerStreamFactory;
-use Micromus\KafkaBus\Support\Resolvers\NativeResolver;
 use Micromus\KafkaBus\Topics\TopicRegistry;
 use Micromus\KafkaBusLaravel\Commands\KafkaConsumeCommand;
+use Micromus\KafkaBusLaravel\Components\Outbox\KafkaBusOutboxServiceProvider;
+use Micromus\KafkaBusLaravel\Components\Repeaters\KafkaBusRepeaterServiceProvider;
 use Micromus\KafkaBusLaravel\Factories\PublisherRoutesFactory;
 use Micromus\KafkaBusLaravel\Factories\TopicRegistryFactory;
 use Micromus\KafkaBusLaravel\Factories\WorkerRegistryFactory;
-use Micromus\KafkaBusLaravel\Resolvers\ContainerResolver;
 
 class KafkaBusServiceProvider extends ServiceProvider
 {
@@ -42,23 +39,29 @@ class KafkaBusServiceProvider extends ServiceProvider
         $this->app->bind(ConsumerStreamFactoryInterface::class, $this->makeConsumerStreamFactory(...));
         $this->app->bind(ListenerFactory::class, $this->makeListenerFactory(...));
 
+        $this->app->bind(BusLoggerInterface::class, $this->makeBusLogger(...));
+
         $this->app->singleton(DriverRegistry::class, $this->makeDriverRegistry(...));
         $this->app->singleton(ThreadRegistry::class, $this->makeThreadRegistry(...));
         $this->app->singleton(ConnectionRegistryInterface::class, $this->makeConnectionRegistry(...));
 
         $this->app->singleton(BusInterface::class, $this->makeBus(...));
+
+        $this->registerOutboxServiceProvider();
+        $this->registerRepeaterServiceProvider();
     }
 
     public function boot(): void
     {
         $this->publishes([
             __DIR__.'/../config/kafka-bus.php' => config_path('kafka-bus.php'),
+            __DIR__.'/../migrations/1970_01_01_000000_create_kafka_bus_message_commits_table.php' => database_path('1970_01_01_000000_create_kafka_bus_message_commits_table.php'),
+            __DIR__.'/../migrations/1970_01_01_000000_create_kafka_bus_message_fails_table.php' => database_path('1970_01_01_000000_create_kafka_bus_message_fails_table.php'),
+            __DIR__.'/../migrations/1970_01_01_000000_create_kafka_bus_producer_messages_table.php' => database_path('1970_01_01_000000_create_kafka_bus_producer_messages_table.php'),
         ]);
 
         if ($this->app->runningInConsole()) {
-            $this->commands([
-                KafkaConsumeCommand::class,
-            ]);
+            $this->commands(KafkaConsumeCommand::class);
         }
     }
 
@@ -70,20 +73,12 @@ class KafkaBusServiceProvider extends ServiceProvider
 
     protected function makeProducerStreamFactory(Application $app): ProducerStreamFactoryInterface
     {
-        return new ProducerStreamFactory(new MessagePipelineFactory(new ContainerResolver($app)));
+        return $app->make($app['config']->get('kafka-bus.producers.stream_factory'));
     }
 
     protected function makeConsumerStreamFactory(Application $app): ConsumerStreamFactoryInterface
     {
-        return new ConsumerStreamFactory(
-            new ConsumerMessageHandlerFactory(
-                new MessagePipelineFactory(new ContainerResolver($app)),
-                new ConsumerRouterFactory(
-                    new ContainerResolver($app),
-                    $app->make(TopicRegistry::class)
-                )
-            )
-        );
+        return $app->make($app['config']->get('kafka-bus.consumers.stream_factory'));
     }
 
     protected function makePublisherFactory(Application $app): PublisherFactory
@@ -131,5 +126,20 @@ class KafkaBusServiceProvider extends ServiceProvider
             $app->make(DriverRegistry::class),
             $app['config']->get('kafka-bus.connections', [])
         );
+    }
+
+    protected function makeBusLogger(Application $app): BusLoggerInterface
+    {
+        return new BusLogger(Log::channel($app['config']->get('kafka-bus.log_channel')));
+    }
+
+    protected function registerOutboxServiceProvider(): void
+    {
+        $this->app->register(KafkaBusOutboxServiceProvider::class);
+    }
+
+    protected function registerRepeaterServiceProvider(): void
+    {
+        $this->app->register(KafkaBusRepeaterServiceProvider::class);
     }
 }

@@ -6,7 +6,7 @@ use Illuminate\Config\Repository;
 use Micromus\KafkaBus\Topics\Topic;
 use Micromus\KafkaBus\Topics\TopicRegistry;
 
-class TopicRegistryFactory
+final class TopicRegistryFactory
 {
     public function __construct(
         protected Repository $configRepository

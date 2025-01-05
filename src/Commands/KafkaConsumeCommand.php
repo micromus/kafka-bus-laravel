@@ -7,6 +7,7 @@ use Micromus\KafkaBus\Bus\Listeners\Listener;
 use Micromus\KafkaBus\Exceptions\Consumers\ConsumerException;
 use Micromus\KafkaBus\Exceptions\Consumers\MessageConsumerNotHandledException;
 use Micromus\KafkaBus\Interfaces\Bus\BusInterface;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Command\SignalableCommandInterface;
 
 final class KafkaConsumeCommand extends Command implements SignalableCommandInterface
@@ -17,23 +18,26 @@ final class KafkaConsumeCommand extends Command implements SignalableCommandInte
 
     /**
      * @param BusInterface $bus
+     * @param LoggerInterface $logger
      * @return void
      *
      * @throws MessageConsumerNotHandledException
      */
-    public function handle(BusInterface $bus): void
+    public function handle(BusInterface $bus, LoggerInterface $logger): void
     {
         $workerName = $this->argument('workerName');
 
         try {
             $this->info("Start consuming for \"$workerName\"");
 
-            $this->listener = $bus->listener($workerName);
+            $this->listener = $bus->createListener($workerName);
             $this->listener->listen();
 
             $this->info('Consumer finished');
         }
         catch (ConsumerException $exception) {
+            $logger->error($exception->getMessage(), ['exception' => $exception]);
+
             $this->error("Consumer stopped. Error: {$exception->getMessage()}");
         }
     }

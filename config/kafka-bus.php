@@ -25,12 +25,23 @@ return [
                 'sasl.username' => env('KAFKA_SASL_USERNAME'),
                 'sasl.password' => env('KAFKA_SASL_PASSWORD'),
 
-                'log_level' => env('KAFKA_DEBUG', false) ? (string) LOG_DEBUG : (string) LOG_INFO,
+                'log_level' => env('KAFKA_DEBUG', false) ? (string) LOG_DEBUG : (string) LOG_ERR,
 
                 /*
                  | Choose if debug is enabled or not.
                  */
                 'debug' => env('KAFKA_DEBUG', false) ? 'all' : null,
+            ],
+        ],
+
+        'outbox' => [
+            'driver' => 'kafka_outbox',
+            'options' => [
+                /*
+                 | Name connection to published transactional messages
+                 | from Database
+                 */
+                'connection_for' => 'kafka'
             ],
         ],
     ],
@@ -41,13 +52,21 @@ return [
         //'products' => 'fact.products.1',
     ],
 
+    'log_channel' => env('KAFKA_LOGGER', env('LOG_CHANNEL', 'daily')),
+
     'consumers' => [
+        /*
+         | Factory class for create ConsumerStreamInterface
+         */
+        'stream_factory' => Micromus\KafkaBusLaravel\Consumers\LaravelConsumerStreamFactory::class,
+
         /*
          | Optional, defaults to empty array.
          | Array of middleware.
         */
         'middlewares' => [
-            //
+            Micromus\KafkaBusRepeater\Middlewares\ConsumerMessageFailedSaverMiddleware::class,
+            Micromus\KafkaBusRepeater\Middlewares\ConsumerMessageCommiterMiddleware::class,
         ],
 
         /*
@@ -143,7 +162,9 @@ return [
     ],
 
     'producers' => [
-
+        /*
+         | Factory class for create ProducerStreamInterface
+         */
         'stream_factory' => Micromus\KafkaBusLaravel\Producers\LaravelProducerStreamFactory::class,
 
         /*
@@ -189,7 +210,10 @@ return [
             //        'flush_timeout' => 5000, // Override global option, remove if not need
             //        'flush_retries' => 5, // Override global option, remove if not need
             //    ]
-            //]
+            //],
+
+            // create new route without options
+            //App\Kafka\Messages\ProductMessage::class => 'products',
         ],
     ],
 ];

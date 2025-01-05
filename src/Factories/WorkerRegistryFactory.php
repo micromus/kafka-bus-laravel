@@ -8,13 +8,12 @@ use Micromus\KafkaBus\Bus\Listeners\Workers\Route;
 use Micromus\KafkaBus\Bus\Listeners\Workers\Worker;
 use Micromus\KafkaBus\Bus\Listeners\Workers\WorkerRegistry;
 use Micromus\KafkaBus\Bus\Listeners\Workers\WorkerRoutes;
-use Micromus\KafkaBus\Messages\NativeMessageFactory;
-use Micromus\KafkaBusLaravel\Exceptions\KafkaBusConfigurationException;
 
-class WorkerRegistryFactory
+final class WorkerRegistryFactory
 {
     public function __construct(
-        protected Repository $configRepository
+        protected Repository $configRepository,
+        protected OptionsMerger $optionsMerger,
     ) {
     }
 
@@ -86,20 +85,8 @@ class WorkerRegistryFactory
 
     protected function makeOptions(array $workerOptions, array $globalOptions): Options
     {
-        $options = [
-            ...$globalOptions,
-            ...$workerOptions,
-
-            'middlewares' => [
-                ...($globalOptions['middlewares'] ?? []),
-                ...($workerOptions['middlewares'] ?? []),
-            ],
-
-            'additional_options' => [
-                ...($globalOptions['additional_options'] ?? []),
-                ...($workerOptions['additional_options'] ?? []),
-            ],
-        ];
+        $options = $this->optionsMerger
+            ->merge($workerOptions, $globalOptions);
 
         return new Options(
             additionalOptions: $options['additional_options'],

@@ -8,10 +8,11 @@ use Micromus\KafkaBus\Bus\Publishers\Router\PublisherRoutes;
 use Micromus\KafkaBus\Bus\Publishers\Router\Route;
 use Micromus\KafkaBusLaravel\Exceptions\KafkaBusConfigurationException;
 
-class PublisherRoutesFactory
+final class PublisherRoutesFactory
 {
     public function __construct(
-        protected Repository $configRepository
+        protected Repository $configRepository,
+        protected OptionsMerger $optionsMerger,
     ) {
     }
 
@@ -22,6 +23,12 @@ class PublisherRoutesFactory
         $routes = $this->configRepository->get('kafka-bus.producers.routes', []);
 
         foreach ($routes as $messageClass => $route) {
+            if (is_string($route)) {
+                $publisherRoutes->add($this->createPublisherRouteWithoutOptions($messageClass, $route, $globalOptions));
+
+                continue;
+            }
+
             $topicKey = $route['topic_key']
                 ?? throw new KafkaBusConfigurationException("Param [kafka-bus.producers.routes.$messageClass.topic_key] is required]");
 
@@ -32,28 +39,21 @@ class PublisherRoutesFactory
         return $publisherRoutes;
     }
 
+    protected function createPublisherRouteWithoutOptions(string $messageClass, string $topicKey, array $globalOptions): Route
+    {
+        return new Route($messageClass, $topicKey, $this->makeOptions([], $globalOptions));
+    }
+
     protected function makeOptions(array $routeOptions, array $globalOptions): Options
     {
-        $configuration = [
-            ...$globalOptions,
-            ...$routeOptions,
-
-            'middlewares' => [
-                ...($globalOptions['middlewares'] ?? []),
-                ...($routeOptions['middlewares'] ?? []),
-            ],
-
-            'additional_options' => [
-                ...($globalOptions['additional_options'] ?? []),
-                ...($routeOptions['additional_options'] ?? []),
-            ],
-        ];
+        $options = $this->optionsMerger
+            ->merge($routeOptions, $globalOptions);
 
         return new Options(
-            additionalOptions: $configuration['additional_options'],
-            middlewares: $configuration['middlewares'],
-            flushTimeout: $configuration['flush_timeout'] ?? 5000,
-            flushRetries: $configuration['flush_retries'] ?? 5,
+            additionalOptions: $options['additional_options'],
+            middlewares: $options['middlewares'],
+            flushTimeout: $options['flush_timeout'] ?? 5000,
+            flushRetries: $options['flush_retries'] ?? 5,
         );
     }
 }
