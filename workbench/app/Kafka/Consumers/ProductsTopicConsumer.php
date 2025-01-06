@@ -2,7 +2,6 @@
 
 namespace Workbench\App\Kafka\Consumers;
 
-use _PHPStan_2132cc0bd\Nette\Neon\Exception;
 use Micromus\KafkaBus\Consumers\Attributes\MessageFactory;
 use Psr\Log\LoggerInterface;
 use Workbench\App\Kafka\Messages\ProductDomainMessage;
