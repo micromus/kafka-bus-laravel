@@ -4,10 +4,8 @@ namespace Micromus\KafkaBusLaravel\Components\Repeaters;
 
 use Illuminate\Foundation\Application;
 use Illuminate\Support\ServiceProvider;
-use Micromus\KafkaBus\Bus\Listeners\Workers\WorkerRegistry;
 use Micromus\KafkaBus\Consumers\Messages\ConsumerMessageHandlerFactory;
 use Micromus\KafkaBus\Consumers\Router\ConsumerRouterFactory;
-use Micromus\KafkaBus\Interfaces\Consumers\Messages\ConsumerMessageHandlerFactoryInterface;
 use Micromus\KafkaBus\Pipelines\PipelineFactory;
 use Micromus\KafkaBus\Topics\TopicRegistry;
 use Micromus\KafkaBusLaravel\Components\Repeaters\Repositories\ConsumerMessageFailedRepository;
