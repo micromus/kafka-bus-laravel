@@ -19,6 +19,8 @@ use Micromus\KafkaBus\Interfaces\Consumers\ConsumerStreamFactoryInterface;
 use Micromus\KafkaBus\Interfaces\Producers\ProducerStreamFactoryInterface;
 use Micromus\KafkaBus\Topics\TopicRegistry;
 use Micromus\KafkaBusLaravel\Commands\KafkaConsumeCommand;
+use Micromus\KafkaBusLaravel\Commands\KafkaOutboxProducerCommand;
+use Micromus\KafkaBusLaravel\Commands\KafkaRepeaterConsumerCommand;
 use Micromus\KafkaBusLaravel\Components\Outbox\KafkaBusOutboxServiceProvider;
 use Micromus\KafkaBusLaravel\Components\Repeaters\KafkaBusRepeaterServiceProvider;
 use Micromus\KafkaBusLaravel\Factories\PublisherRoutesFactory;
@@ -55,13 +57,20 @@ class KafkaBusServiceProvider extends ServiceProvider
     {
         $this->publishes([
             __DIR__.'/../config/kafka-bus.php' => config_path('kafka-bus.php'),
-            __DIR__.'/../migrations/1970_01_01_000000_create_kafka_bus_message_commits_table.php' => database_path('1970_01_01_000000_create_kafka_bus_message_commits_table.php'),
-            __DIR__.'/../migrations/1970_01_01_000000_create_kafka_bus_message_fails_table.php' => database_path('1970_01_01_000000_create_kafka_bus_message_fails_table.php'),
-            __DIR__.'/../migrations/1970_01_01_000000_create_kafka_bus_producer_messages_table.php' => database_path('1970_01_01_000000_create_kafka_bus_producer_messages_table.php'),
-        ]);
+        ], 'kafka-bus-migrations');
+
+        $this->publishes([
+            __DIR__.'/../database/migrations/1970_01_01_000000_create_kafka_bus_message_commits_table.php' => database_path('migrations/1970_01_01_000000_create_kafka_bus_message_commits_table.php'),
+            __DIR__.'/../database/migrations/1970_01_01_000000_create_kafka_bus_message_fails_table.php' => database_path('migrations/1970_01_01_000000_create_kafka_bus_message_fails_table.php'),
+            __DIR__.'/../database/migrations/1970_01_01_000000_create_kafka_bus_producer_messages_table.php' => database_path('migrations/1970_01_01_000000_create_kafka_bus_producer_messages_table.php'),
+        ], 'kafka-bus-migrations');
 
         if ($this->app->runningInConsole()) {
-            $this->commands(KafkaConsumeCommand::class);
+            $this->commands([
+                KafkaConsumeCommand::class,
+                KafkaOutboxProducerCommand::class,
+                KafkaRepeaterConsumerCommand::class,
+            ]);
         }
     }
 

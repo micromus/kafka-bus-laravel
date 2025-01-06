@@ -28,6 +28,7 @@ final class FailedConsumerMessageConverter
         $kafkaMessage->partition = $message->partition;
         $kafkaMessage->offset = $message->offset;
         $kafkaMessage->headers = $message->headers;
+        $kafkaMessage->timestamp = $message->timestamp;
 
         return $kafkaMessage;
     }

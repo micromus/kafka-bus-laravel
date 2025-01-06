@@ -20,10 +20,10 @@
         "ext-pcntl": "*",
         "ext-rdkafka": "*",
         "illuminate/contracts": "^10.0||^11.0",
-        "micromus/kafka-bus": "^0.6.7",
+        "micromus/kafka-bus": "^0.6.8",
         "micromus/kafka-bus-messages": "^0.2.0",
-        "micromus/kafka-bus-outbox": "^0.3.0",
-        "micromus/kafka-bus-repeater": "^0.3.1"
+        "micromus/kafka-bus-outbox": "^0.4.1",
+        "micromus/kafka-bus-repeater": "^0.3.2"
     },
     "require-dev": {
         "larastan/larastan": "^2.9",
@@ -56,7 +56,10 @@
             "@composer run prepare"
         ],
         "clear": "@php vendor/bin/testbench package:purge-skeleton --ansi",
-        "prepare": "@php vendor/bin/testbench package:discover --ansi",
+        "prepare": [
+            "@php vendor/bin/testbench package:discover --ansi",
+            "@php vendor/bin/testbench workbench:sync-skeleton"
+        ],
         "build": "@php vendor/bin/testbench workbench:build --ansi",
         "start": [
             "Composer\\Config::disableProcessTimeout",

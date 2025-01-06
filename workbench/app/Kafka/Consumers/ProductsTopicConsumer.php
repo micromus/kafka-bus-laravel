@@ -2,8 +2,11 @@
 
 namespace Workbench\App\Kafka\Consumers;
 
-use Micromus\KafkaBus\Consumers\Messages\ConsumerMessage;
+use _PHPStan_2132cc0bd\Nette\Neon\Exception;
+use Micromus\KafkaBus\Consumers\Attributes\MessageFactory;
 use Psr\Log\LoggerInterface;
+use Workbench\App\Kafka\Messages\ProductDomainMessage;
+use Workbench\App\Kafka\Messages\ProductDomainMessageFactory;
 
 class ProductsTopicConsumer
 {
@@ -12,8 +15,10 @@ class ProductsTopicConsumer
     ) {
     }
 
-    public function execute(ConsumerMessage $message): void
+    #[MessageFactory(ProductDomainMessageFactory::class)]
+    public function execute(ProductDomainMessage $message): void
     {
-        $this->logger->info($message->payload, ['message' => $message]);
+        $this->logger
+            ->info($message->attributes->name, ['message' => $message]);
     }
 }

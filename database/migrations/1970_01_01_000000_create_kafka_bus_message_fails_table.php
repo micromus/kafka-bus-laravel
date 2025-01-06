@@ -16,6 +16,7 @@ return new class () extends Migration {
             $table->string('key')->nullable();
             $table->unsignedSmallInteger('partition');
             $table->unsignedBigInteger('offset');
+            $table->unsignedBigInteger('timestamp');
             $table->timestamps();
         });
     }

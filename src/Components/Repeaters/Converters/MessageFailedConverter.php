@@ -26,6 +26,7 @@ final class MessageFailedConverter
 
         $messageFailed->partition = $message->original()->partition;
         $messageFailed->offset = $message->original()->offset;
+        $messageFailed->timestamp = $message->original()->timestamp;
 
         return $messageFailed;
     }

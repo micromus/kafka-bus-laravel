@@ -16,6 +16,7 @@ final class ProducerMessageConverter
         $message->headers = $producerMessage->original->headers;
         $message->partition = $producerMessage->original->partition;
         $message->key = $producerMessage->original->key;
+        $message->additional_options = $producerMessage->additionalOptions;
 
         return $message;
     }

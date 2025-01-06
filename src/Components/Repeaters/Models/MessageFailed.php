@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property string|null $key
  * @property int $partition
  * @property int $offset
+ * @property int $timestamp
  *
  * @property CarbonInterface|null $updated_at
  * @property CarbonInterface|null $created_at

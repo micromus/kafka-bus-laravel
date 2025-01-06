@@ -17,14 +17,6 @@ return [
                  */
                 'metadata.broker.list' => env('KAFKA_BROKER_LIST'),
 
-                /*
-                 | Default security protocol
-                 */
-                'security.protocol' => env('KAFKA_SECURITY_PROTOCOL', 'SASL_PLAINTEXT'),
-                'sasl.mechanisms' => env('KAFKA_SASL_MECHANISMS', 'PLAIN'),
-                'sasl.username' => env('KAFKA_SASL_USERNAME'),
-                'sasl.password' => env('KAFKA_SASL_PASSWORD'),
-
                 'log_level' => env('KAFKA_DEBUG', false) ? (string) LOG_DEBUG : (string) LOG_ERR,
 
                 /*
@@ -49,10 +41,10 @@ return [
     'topic_prefix' => env('KAFKA_PREFIX', env('APP_ENV', 'local').'.'),
 
     'topics' => [
-        //'products' => 'fact.products.1',
+        'products' => 'fact.products.1',
     ],
 
-    'log_channel' => env('KAFKA_LOGGER', env('LOG_CHANNEL', 'stack')),
+    'log_channel' => env('KAFKA_LOGGER', env('LOG_CHANNEL', 'daily')),
 
     'consumers' => [
         /*
@@ -117,47 +109,7 @@ return [
          | subscribe to Apache Kafka topics.
          */
         'workers' => [
-            /*
-             | This is worker name.
-             | To start Worker, run the command:
-             | php artisan kafka:consume default
-             */
-            'default' => [
-                /*
-                 | Optional, defaults to -1.
-                 | The amount of time that will be listened to before disabling.
-                 */
-                'options' => [
-                    //'middlewares' => [],
-                    //'additional_options' => [],
-                    //'auto_commit' => false, // Override global option, remove if not need
-                    //'consume_timeout' => 20000, // Override global option, remove if not need
-                ],
-
-                /*
-                 | A list of topics that will be subscribed to by the current employee.
-                 | For each of them, you need to create a PHP class that will handle Apache Kafka messages.
-                 */
-                'topics' => [
-                    //'products' => App\Kafka\Consumers\ProductsTopicConsumer::class
-                ],
-            ],
-
-            // consume one topic when topic key == worker name
-            //'products' => App\Kafka\Consumers\ProductsTopicConsumer::class,
-
-            // consume one topic with options and topic key == worker name
-            //'products' => [
-            //    'options' => [],
-            //    'handler' => App\Kafka\Consumers\ProductsTopicConsumer::class,
-            //],
-
-            // consume one topic when topic key != worker name
-            //'products-other-name' => [
-            //    'options' => [],
-            //    'topic_key' => 'products',
-            //    'handler' => App\Kafka\Consumers\ProductsTopicConsumer::class,
-            //],
+            'products' => Workbench\App\Kafka\Consumers\ProductsTopicConsumer::class,
         ],
     ],
 
@@ -179,13 +131,13 @@ return [
          | Optional, defaults to 5000.
          | Kafka producer flush timeout in milliseconds.
          */
-        'flush_timeout' => 5000,
+        'flush_timeout' => 1000,
 
         /*
          | Optional, defaults to 5.
          | Kafka producer flush retries
          */
-        'flush_retries' => 5,
+        'flush_retries' => 1,
 
         /*
          | Options for Kafka Producer
@@ -202,18 +154,7 @@ return [
          | The amount of time that will be listened to before disabling.
          */
         'routes' => [
-            //App\Kafka\Messages\ProductMessage::class => [
-            //    'topic_key' => 'products',
-            //    'options' => [
-            //        'middlewares' => [],
-            //        'additional_options' => [],
-            //        'flush_timeout' => 5000, // Override global option, remove if not need
-            //        'flush_retries' => 5, // Override global option, remove if not need
-            //    ]
-            //],
-
-            // create new route without options
-            //App\Kafka\Messages\ProductMessage::class => 'products',
+            Workbench\App\Kafka\Messages\ProductDomainMessage::class => 'products',
         ],
     ],
 ];

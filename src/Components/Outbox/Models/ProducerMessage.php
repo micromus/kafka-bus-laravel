@@ -20,6 +20,11 @@ final class ProducerMessage extends Model
 
     protected $table = 'kafka_bus_producer_messages';
 
+    protected $attributes = [
+        'headers' => [],
+        'additional_options' => []
+    ];
+
     protected $casts = [
         'headers' => 'array',
         'partition' => 'integer',

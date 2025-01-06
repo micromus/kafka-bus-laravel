@@ -2,24 +2,17 @@
 
 namespace Workbench\App\Providers;
 
-use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
+use Workbench\App\Console\Commands\KafkaBusPublicationTestCommand;
 
-class WorkbenchServiceProvider extends ServiceProvider
+final class WorkbenchServiceProvider extends ServiceProvider
 {
-    /**
-     * Register services.
-     */
     public function register(): void
     {
-        //
-    }
+        $this->app['config']->set('kafka-bus', require __DIR__.'/../../config/kafka-bus.php');
 
-    /**
-     * Bootstrap services.
-     */
-    public function boot(): void
-    {
-        Route::view('/', 'welcome');
+        $this->commands([
+            KafkaBusPublicationTestCommand::class,
+        ]);
     }
 }

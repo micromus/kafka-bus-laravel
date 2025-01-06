@@ -6,6 +6,7 @@ use Micromus\KafkaBusLaravel\Components\Outbox\Converters\DeferredProducerMessag
 use Micromus\KafkaBusLaravel\Components\Outbox\Converters\ProducerMessageConverter;
 use Micromus\KafkaBusLaravel\Components\Outbox\Models\ProducerMessage;
 use Micromus\KafkaBusOutbox\Interfaces\ProducerMessageRepositoryInterface;
+use Micromus\KafkaBusOutbox\Messages\OutboxProducerMessage;
 
 final class ProducerMessageRepository implements ProducerMessageRepositoryInterface
 {
@@ -29,13 +30,8 @@ final class ProducerMessageRepository implements ProducerMessageRepositoryInterf
 
     public function save(array $messages): void
     {
-        $messages = array_map(
-            $this->messageProduceConverter->convert(...),
-            $messages
-        );
-
         ProducerMessage::query()
-            ->insert($messages);
+            ->insert(array_map($this->mapToArray(...), $messages));
     }
 
     public function delete(array $ids): void
@@ -43,5 +39,12 @@ final class ProducerMessageRepository implements ProducerMessageRepositoryInterf
         ProducerMessage::query()
             ->whereIn('id', array_map(intval(...), $ids))
             ->delete();
+    }
+
+    private function mapToArray(OutboxProducerMessage $producerMessage): array
+    {
+        return $this->messageProduceConverter
+            ->convert($producerMessage)
+            ->getAttributes();
     }
 }

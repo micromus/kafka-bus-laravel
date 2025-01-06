@@ -13,17 +13,18 @@ use Symfony\Component\Console\Command\SignalableCommandInterface;
 final class KafkaConsumeCommand extends Command implements SignalableCommandInterface
 {
     protected $signature = 'kafka:consume {workerName}';
+    protected $description = 'Reading messages from Apache Kafka by worker name';
 
     protected ?Listener $listener;
 
     /**
      * @param BusInterface $bus
      * @param LoggerInterface $logger
-     * @return void
+     * @return int
      *
      * @throws MessageConsumerNotHandledException
      */
-    public function handle(BusInterface $bus, LoggerInterface $logger): void
+    public function handle(BusInterface $bus, LoggerInterface $logger): int
     {
         $workerName = $this->argument('workerName');
 
@@ -34,11 +35,15 @@ final class KafkaConsumeCommand extends Command implements SignalableCommandInte
             $this->listener->listen();
 
             $this->info('Consumer finished');
+
+            return self::SUCCESS;
         }
         catch (ConsumerException $exception) {
             $logger->error($exception->getMessage(), ['exception' => $exception]);
 
             $this->error("Consumer stopped. Error: {$exception->getMessage()}");
+
+            return self::FAILURE;
         }
     }
 
