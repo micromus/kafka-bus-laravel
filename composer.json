@@ -22,7 +22,7 @@
         "illuminate/contracts": "^10.0||^11.0",
         "micromus/kafka-bus": "^0.6.7",
         "micromus/kafka-bus-messages": "^0.2.0",
-        "micromus/kafka-bus-outbox": "^0.3.0",
+        "micromus/kafka-bus-outbox": "^0.4.1",
         "micromus/kafka-bus-repeater": "^0.3.1"
     },
     "require-dev": {
