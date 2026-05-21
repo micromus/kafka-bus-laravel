@@ -58,6 +58,7 @@ return [
          | Array of middleware.
         */
         'middlewares' => [
+            //
         ],
 
         /*
@@ -162,8 +163,7 @@ return [
         ],
 
         /*
-         | Optional, defaults to -1.
-         | The amount of time that will be listened to before disabling.
+         | Producer message routes to topic kafka
          */
         'routes' => [
             //App\Kafka\Messages\ProductMessage::class => [

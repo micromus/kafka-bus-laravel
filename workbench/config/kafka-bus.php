@@ -44,21 +44,21 @@ return [
         'products' => 'fact.products.1',
     ],
 
-    'log_channel' => env('KAFKA_LOGGER', env('LOG_CHANNEL', 'daily')),
-
     'consumers' => [
-        /*
-         | Factory class for create ConsumerStreamInterface
-         */
-        'stream_factory' => Micromus\KafkaBusLaravel\Consumers\LaravelConsumerStreamFactory::class,
-
         /*
          | Optional, defaults to empty array.
          | Array of middleware.
         */
         'middlewares' => [
-            Micromus\KafkaBusRepeater\Middlewares\ConsumerMessageFailedSaverMiddleware::class,
-            Micromus\KafkaBusRepeater\Middlewares\ConsumerMessageCommiterMiddleware::class,
+            //
+        ],
+
+        /*
+         | This defines Workers that will be run in separate processes in order to
+         | subscribe to Apache Kafka topics.
+         */
+        'workers' => [
+            'products' => Workbench\App\Kafka\Consumers\ProductsTopicConsumer::class,
         ],
 
         /*
@@ -103,28 +103,23 @@ return [
 
             'auto.offset.reset' => 'beginning',
         ],
-
-        /*
-         | This defines Workers that will be run in separate processes in order to
-         | subscribe to Apache Kafka topics.
-         */
-        'workers' => [
-            'products' => Workbench\App\Kafka\Consumers\ProductsTopicConsumer::class,
-        ],
     ],
 
     'producers' => [
-        /*
-         | Factory class for create ProducerStreamInterface
-         */
-        'stream_factory' => Micromus\KafkaBusLaravel\Producers\LaravelProducerStreamFactory::class,
-
         /*
          | Optional, defaults to empty array.
          | Array of middleware.
         */
         'middlewares' => [
             //
+        ],
+
+        /*
+         | Optional, defaults to -1.
+         | The amount of time that will be listened to before disabling.
+         */
+        'routes' => [
+            Workbench\App\Kafka\Messages\ProductDomainMessage::class => 'products',
         ],
 
         /*
@@ -147,14 +142,6 @@ return [
              | Kafka supports 4 compression codecs: none , gzip , lz4 and snappy
              */
             'compression.codec' => env('KAFKA_PRODUCER_COMPRESSION_CODEC', 'snappy'),
-        ],
-
-        /*
-         | Optional, defaults to -1.
-         | The amount of time that will be listened to before disabling.
-         */
-        'routes' => [
-            Workbench\App\Kafka\Messages\ProductDomainMessage::class => 'products',
         ],
     ],
 ];
