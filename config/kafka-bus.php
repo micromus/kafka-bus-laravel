@@ -15,7 +15,7 @@ return [
                 /*
                  | Your kafka brokers url.
                  */
-                'metadata.broker.list' => env('KAFKA_BROKER_LIST'),
+                'metadata.broker.list' => env('KAFKA_BROKER_LIST', 'localhost:9092'),
 
                 /*
                  | Default security protocol
@@ -25,25 +25,23 @@ return [
                 'sasl.username' => env('KAFKA_SASL_USERNAME'),
                 'sasl.password' => env('KAFKA_SASL_PASSWORD'),
 
-                'log_level' => env('KAFKA_DEBUG', false) ? (string) LOG_DEBUG : (string) LOG_ERR,
-
                 /*
                  | Choose if debug is enabled or not.
                  */
-                'debug' => env('KAFKA_DEBUG', false) ? 'all' : null,
+                'debug' => env('KAFKA_DEBUG', false),
             ],
         ],
 
-        'outbox' => [
-            'driver' => 'kafka_outbox',
-            'options' => [
-                /*
-                 | Name connection to published transactional messages
-                 | from Database
-                 */
-                'connection_for' => 'kafka'
-            ],
-        ],
+//        'outbox' => [
+//            'driver' => 'kafka_outbox',
+//            'options' => [
+//                /*
+//                 | Name connection to published transactional messages
+//                 | from Database
+//                 */
+//                'connection_for' => 'kafka'
+//            ],
+//        ],
     ],
 
     'topic_prefix' => env('KAFKA_PREFIX', env('APP_ENV', 'local').'.'),
@@ -57,7 +55,7 @@ return [
          | Optional, defaults to empty array.
          | Array of middleware.
         */
-        'middlewares' => [
+        'middleware' => [
             //
         ],
 
@@ -73,22 +71,28 @@ return [
              */
             'default' => [
                 /*
-                 | Optional, defaults to -1.
-                 | The amount of time that will be listened to before disabling.
-                 */
-                'options' => [
-                    //'middlewares' => [],
-                    //'additional_options' => [],
-                    //'auto_commit' => false, // Override global option, remove if not need
-                    //'consume_timeout' => 20000, // Override global option, remove if not need
+                 | Optional, defaults to empty array.
+                 | Array of middleware.
+                */
+                'middleware' => [
+                    //
                 ],
+
+                //'additional_options' => [],
+                //'auto_commit' => false, // Override global option, remove if not need
+                //'consume_timeout' => 20000, // Override global option, remove if not need
 
                 /*
                  | A list of topics that will be subscribed to by the current employee.
                  | For each of them, you need to create a PHP class that will handle Apache Kafka messages.
                  */
                 'topics' => [
-                    //'products' => App\Kafka\Consumers\ProductsTopicConsumer::class
+                    //'products' => App\Kafka\Consumers\ProductsTopicConsumer::class,
+
+                    //'products' => [
+                    //    'handler' => App\Kafka\Consumers\ProductsTopicConsumer::class,
+                    //    'middleware' => []
+                    //],
                 ],
             ],
 
@@ -97,13 +101,13 @@ return [
 
             // consume one topic with options and topic key == worker name
             //'products' => [
-            //    'options' => [],
+            //    'middleware' => [],
             //    'handler' => App\Kafka\Consumers\ProductsTopicConsumer::class,
             //],
 
             // consume one topic when topic key != worker name
             //'products-other-name' => [
-            //    'options' => [],
+            //    'middleware' => [],
             //    'topic_key' => 'products',
             //    'handler' => App\Kafka\Consumers\ProductsTopicConsumer::class,
             //],
@@ -113,7 +117,7 @@ return [
          | If you set enable.auto.commit (which is the default), then the consumer will automatically commit offsets periodically at the
          | interval set by auto.commit.interval.ms.
          */
-        'auto_commit' => env('KAFKA_CONSUMER_AUTO_COMMIT', true),
+        'auto_commit' => env('KAFKA_CONSUMER_AUTO_COMMIT', false),
 
         /*
          | Optional, defaults to 5000.
@@ -158,7 +162,7 @@ return [
          | Optional, defaults to empty array.
          | Array of middleware.
         */
-        'middlewares' => [
+        'middleware' => [
             //
         ],
 
@@ -168,12 +172,10 @@ return [
         'routes' => [
             //App\Kafka\Messages\ProductMessage::class => [
             //    'topic_key' => 'products',
-            //    'options' => [
-            //        'middlewares' => [],
-            //        'additional_options' => [],
-            //        'flush_timeout' => 5000, // Override global option, remove if not need
-            //        'flush_retries' => 5, // Override global option, remove if not need
-            //    ]
+            //    'middleware' => [],
+            //    'additional_options' => [],
+            //    'flush_timeout' => 5000, // Override global option, remove if not need
+            //    'flush_retries' => 5, // Override global option, remove if not need
             //],
 
             // create new route without options

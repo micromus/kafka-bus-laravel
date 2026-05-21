@@ -8,5 +8,5 @@ it('can produce message to kafka', function () {
     config()->set('kafka-bus.producers.routes', [ProducerMessageFaker::class => 'products']);
 
     resolve(BusInterface::class)
-        ->publish([new ProducerMessageFaker('test-message')]);
+        ->publish(new ProducerMessageFaker('test-message'));
 });

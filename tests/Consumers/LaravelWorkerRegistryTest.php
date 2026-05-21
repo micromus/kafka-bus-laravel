@@ -1,49 +1,37 @@
 <?php
 
-use Micromus\KafkaBusLaravel\Factories\WorkerRegistryFactory;
+use Micromus\KafkaBus\Testing\Messages\ConsumerHandlerFaker;
+use Micromus\KafkaBusLaravel\Listeners\LaravelWorkerRegistry;
 
 use function PHPUnit\Framework\assertCount;
 use function PHPUnit\Framework\assertEquals;
+use function PHPUnit\Framework\assertInstanceOf;
 
 it('create worker', function () {
+    config()->set('kafka-bus.topics', ['products' => 'test-products-topic']);
+
     config()->set('kafka-bus.consumers', [
         'additional_options' => [
             'test.option' => 'bar',
             'not.override' => 'test-value',
         ],
-
-        'middlewares' => [
-            'FirstMiddlewareOnlyGlobal',
-            'MiddlewareClass',
-        ],
-
-        'consume_timeout' => 5_000,
-        'auto_commit' => true,
     ]);
 
     config()->set('kafka-bus.consumers.workers', [
         'default-worker' => [
-            'options' => [
-                'additional_options' => [
-                    'test.option' => 'foo',
-                    'new.option' => 'bar',
-                ],
-
-                'middlewares' => [
-                    'FirstMiddlewareOnlyGlobal',
-                    'OtherMiddlewareClass',
-                ],
+            'additional_options' => [
+                'test.option' => 'foo',
+                'new.option' => 'bar',
             ],
 
             'topics' => [
-                'products' => 'HandlerClass',
+                'products' => ConsumerHandlerFaker::class,
             ],
         ],
     ]);
 
     /** @var \Micromus\KafkaBus\Bus\Listeners\Workers\Worker $worker */
-    $worker = resolve(WorkerRegistryFactory::class)
-        ->create()
+    $worker = resolve(LaravelWorkerRegistry::class)
         ->get('default-worker');
 
     assertEquals($worker->options->additionalOptions, [
@@ -52,15 +40,10 @@ it('create worker', function () {
         'new.option' => 'bar',
     ]);
 
-    assertEquals($worker->options->consumerTimeout, 5_000);
+    $route = $worker->routes->get('local.test-products-topic');
 
-    assertEquals($worker->options->middlewares, ['MiddlewareClass', 'FirstMiddlewareOnlyGlobal', 'OtherMiddlewareClass']);
-
-    $routes = $worker->routes->all();
-
-    assertCount(1, $routes);
-    assertEquals('products', $routes['products']->topicKey);
-    assertEquals('HandlerClass', $routes['products']->handlerClass);
+    assertEquals('products', $route->topic->key);
+    assertInstanceOf(ConsumerHandlerFaker::class, $route->handler);
 });
 
 it('create worker with short configuration', function () {

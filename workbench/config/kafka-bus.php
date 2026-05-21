@@ -15,27 +15,25 @@ return [
                 /*
                  | Your kafka brokers url.
                  */
-                'metadata.broker.list' => env('KAFKA_BROKER_LIST'),
-
-                'log_level' => env('KAFKA_DEBUG', false) ? (string) LOG_DEBUG : (string) LOG_ERR,
+                'metadata.broker.list' => env('KAFKA_BROKER_LIST', 'localhost:9092'),
 
                 /*
                  | Choose if debug is enabled or not.
                  */
-                'debug' => env('KAFKA_DEBUG', false) ? 'all' : null,
+                'debug' => env('KAFKA_DEBUG', false),
             ],
         ],
 
-        'outbox' => [
-            'driver' => 'kafka_outbox',
-            'options' => [
-                /*
-                 | Name connection to published transactional messages
-                 | from Database
-                 */
-                'connection_for' => 'kafka'
-            ],
-        ],
+//        'outbox' => [
+//            'driver' => 'kafka_outbox',
+//            'options' => [
+//                /*
+//                 | Name connection to published transactional messages
+//                 | from Database
+//                 */
+//                'connection_for' => 'kafka'
+//            ],
+//        ],
     ],
 
     'topic_prefix' => env('KAFKA_PREFIX', env('APP_ENV', 'local').'.'),
@@ -65,7 +63,7 @@ return [
          | If you set enable.auto.commit (which is the default), then the consumer will automatically commit offsets periodically at the
          | interval set by auto.commit.interval.ms.
          */
-        'auto_commit' => env('KAFKA_CONSUMER_AUTO_COMMIT', true),
+        'auto_commit' => env('KAFKA_CONSUMER_AUTO_COMMIT', false),
 
         /*
          | Optional, defaults to 5000.

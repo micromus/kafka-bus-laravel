@@ -3,9 +3,9 @@
 namespace Workbench\App\Kafka\Consumers;
 
 use Micromus\KafkaBus\Consumers\Attributes\MessageFactory;
+use Micromus\KafkaBusMessages\Factories\DomainMessageFactory;
 use Psr\Log\LoggerInterface;
 use Workbench\App\Kafka\Messages\ProductDomainMessage;
-use Workbench\App\Kafka\Messages\ProductDomainMessageFactory;
 
 class ProductsTopicConsumer
 {
@@ -14,10 +14,10 @@ class ProductsTopicConsumer
     ) {
     }
 
-    #[MessageFactory(ProductDomainMessageFactory::class)]
-    public function execute(ProductDomainMessage $message): void
+    #[MessageFactory(new DomainMessageFactory(ProductDomainMessage::class))]
+    public function __invoke(ProductDomainMessage $message): void
     {
         $this->logger
-            ->info($message->attributes->name, ['message' => $message]);
+            ->info($message->name, ['message' => $message->jsonSerialize()]);
     }
 }
