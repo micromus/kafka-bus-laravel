@@ -9,11 +9,9 @@ use Micromus\KafkaBus\Bus;
 use Micromus\KafkaBus\Bus\Listeners\ListenerFactory;
 use Micromus\KafkaBus\Bus\Publishers\PublisherFactory;
 use Micromus\KafkaBus\Bus\ThreadRegistry;
-use Micromus\KafkaBus\BusLogger;
 use Micromus\KafkaBus\Connections\Registry\ConnectionRegistry;
 use Micromus\KafkaBus\Connections\Registry\DriverRegistry;
 use Micromus\KafkaBus\Interfaces\Bus\BusInterface;
-use Micromus\KafkaBus\Interfaces\BusLoggerInterface;
 use Micromus\KafkaBus\Interfaces\Connections\ConnectionRegistryInterface;
 use Micromus\KafkaBus\Interfaces\Consumers\ConsumerStreamFactoryInterface;
 use Micromus\KafkaBus\Interfaces\Producers\ProducerStreamFactoryInterface;
@@ -40,8 +38,6 @@ class KafkaBusServiceProvider extends ServiceProvider
 
         $this->app->bind(ConsumerStreamFactoryInterface::class, $this->makeConsumerStreamFactory(...));
         $this->app->bind(ListenerFactory::class, $this->makeListenerFactory(...));
-
-        $this->app->bind(BusLoggerInterface::class, $this->makeBusLogger(...));
 
         $this->app->singleton(DriverRegistry::class, $this->makeDriverRegistry(...));
         $this->app->singleton(ThreadRegistry::class, $this->makeThreadRegistry(...));

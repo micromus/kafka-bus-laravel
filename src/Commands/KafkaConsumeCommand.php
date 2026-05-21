@@ -31,7 +31,7 @@ final class KafkaConsumeCommand extends Command implements SignalableCommandInte
         try {
             $this->info("Start consuming for \"$workerName\"");
 
-            $this->listener = $bus->createListener($workerName);
+            $this->listener = $bus->listener($workerName);
             $this->listener->listen();
 
             $this->info('Consumer finished');

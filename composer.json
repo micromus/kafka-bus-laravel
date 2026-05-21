@@ -10,20 +10,17 @@
     "license": "MIT",
     "authors": [
         {
-            "name": "Micromus",
+            "name": "Kirill Popkov",
             "email": "kirill.popkov.work@gmail.com",
             "role": "Developer"
         }
     ],
     "require": {
         "php": "^8.2",
-        "ext-pcntl": "*",
         "ext-rdkafka": "*",
         "illuminate/contracts": "^10.0||^11.0",
-        "micromus/kafka-bus": "^0.6.8",
-        "micromus/kafka-bus-messages": "^0.2.0",
-        "micromus/kafka-bus-outbox": "^0.4.1",
-        "micromus/kafka-bus-repeater": "^0.3.2"
+        "micromus/kafka-bus": "^1.0.0-RC9",
+        "micromus/kafka-bus-messages": "^1.0.0-RC7"
     },
     "require-dev": {
         "larastan/larastan": "^2.9",
