@@ -23,7 +23,7 @@
         "micromus/kafka-bus-messages": "^1.0.0-RC7"
     },
     "require-dev": {
-        "larastan/larastan": "^2.9",
+        "larastan/larastan": "^2.9|^3.0",
         "laravel/pint": "^1.14",
         "nunomaduro/collision": "^7.0|^8.0",
         "orchestra/testbench": "^8.0",
