@@ -55,9 +55,12 @@ final readonly class WorkerFactory
         }
 
         if (isset($worker['handler'])) {
+            $topicKey = $worker['topic_key']
+                ?? $workerName;
+
             return new Worker(
                 name: $workerName,
-                routes: $this->makeConsumerRoutes([$workerName => ['handler' => $worker['handler']]]),
+                routes: $this->makeConsumerRoutes([$topicKey => ['handler' => $worker['handler']]]),
                 options: $this->makeOptions($worker)
             );
         }
