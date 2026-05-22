@@ -39,7 +39,7 @@ it('create worker', function () {
         'new.option' => 'bar',
     ]);
 
-    $route = $worker->routes->get('local.test-products-topic');
+    $route = $worker->routes->get('testing.test-products-topic');
 
     assertEquals('products', $route->topic->key);
     assertInstanceOf(ConsumerHandlerFaker::class, $route->handler);
@@ -58,7 +58,7 @@ it('create worker with short configuration', function () {
     $worker = resolve(LaravelWorkerRegistry::class)
         ->get('products');
 
-    $route = $worker->routes->get('local.test-products-topic');
+    $route = $worker->routes->get('testing.test-products-topic');
 
     assertEquals('products', $route->topic->key);
     assertInstanceOf(ConsumerHandlerFaker::class, $route->handler);
@@ -77,7 +77,7 @@ it('create worker with consume one topic', function () {
     $worker = resolve(LaravelWorkerRegistry::class)
         ->get('products');
 
-    $route = $worker->routes->get('local.test-products-topic');
+    $route = $worker->routes->get('testing.test-products-topic');
 
     assertEquals('products', $route->topic->key);
     assertInstanceOf(ConsumerHandlerFaker::class, $route->handler);
@@ -99,7 +99,7 @@ it('create worker with consume one topic with custom topic key', function () {
     $worker = resolve(LaravelWorkerRegistry::class)
         ->get('products_other');
 
-    $route = $worker->routes->get('local.test-products-topic');
+    $route = $worker->routes->get('testing.test-products-topic');
 
     assertEquals('products', $route->topic->key);
     assertInstanceOf(ConsumerHandlerFaker::class, $route->handler);
