@@ -30,5 +30,6 @@
     </source>
     <php>
         <env name="KAFKA_CONNECTION" value="testing"/>
+        <env name="KAFKA_PREFIX" value="testing."/>
     </php>
 </phpunit>

@@ -2,24 +2,29 @@
 
 namespace Micromus\KafkaBusLaravel\Factories;
 
-final class OptionsMerger
+final readonly class OptionsMerger
 {
-    public function merge(array $options, array $globalOptions): array
+    public function __construct(
+        private array $globalOptions
+    ) {
+    }
+
+    public function merge(array $options): array
     {
-        $middlewares = $options['middlewares'] ?? [];
-        $globalMiddlewares = array_diff($globalOptions['middlewares'] ?? [], $middlewares);
+        $middlewares = $options['middleware'] ?? [];
+        $globalMiddleware = array_diff($this->globalOptions['middleware'] ?? [], $middlewares);
 
         return [
-           ...$globalOptions,
+           ...$this->globalOptions,
            ...$options,
 
-           'middlewares' => [
-               ...$globalMiddlewares,
+           'middleware' => [
+               ...$globalMiddleware,
                ...$middlewares,
            ],
 
            'additional_options' => [
-               ...($globalOptions['additional_options'] ?? []),
+               ...($this->globalOptions['additional_options'] ?? []),
                ...($options['additional_options'] ?? []),
            ],
         ];

@@ -5,12 +5,13 @@ namespace Workbench\App\Kafka\Messages;
 use Micromus\KafkaBusMessages\DomainMessage;
 
 /**
- * @extends DomainMessage<ProductAttribute>
+ * @property int $id
+ * @property string $name
  */
-final readonly class ProductDomainMessage extends DomainMessage
+final class ProductDomainMessage extends DomainMessage
 {
     public function getKey(): ?string
     {
-        return (string) $this->attributes->id;
+        return $this->id;
     }
 }

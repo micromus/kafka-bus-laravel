@@ -18,20 +18,20 @@
     "require": {
         "php": "^8.2",
         "ext-rdkafka": "*",
-        "illuminate/contracts": "^10.0||^11.0",
+        "illuminate/contracts": "^10.0 || ^11.0 || ^12.0",
         "micromus/kafka-bus": "^1.0.0-RC9",
         "micromus/kafka-bus-messages": "^1.0.0-RC7"
     },
     "require-dev": {
-        "larastan/larastan": "^2.9",
+        "larastan/larastan": "^2.9 || ^3.0",
         "laravel/pint": "^1.14",
-        "nunomaduro/collision": "^8.1.1||^7.10.0",
-        "orchestra/testbench": "^9.0.0||^8.22.0",
-        "pestphp/pest": "^2.34",
-        "pestphp/pest-plugin-laravel": "^2.3",
+        "nunomaduro/collision": "^7.0 || ^8.0",
+        "orchestra/testbench": "^8.0",
+        "pestphp/pest": "^2.0 || ^3.0",
+        "pestphp/pest-plugin-laravel": "^2.0 || ^3.0",
         "phpstan/extension-installer": "^1.3",
-        "phpstan/phpstan-deprecation-rules": "^1.1",
-        "phpstan/phpstan-phpunit": "^1.3"
+        "phpstan/phpstan-deprecation-rules": "^1.1 || ^2.0",
+        "phpstan/phpstan-phpunit": "^1.3 || ^2.0"
     },
     "autoload": {
         "psr-4": {
@@ -63,7 +63,7 @@
             "@composer run build",
             "@php vendor/bin/testbench serve"
         ],
-        "analyse": "vendor/bin/phpstan analyse",
+        "analyse": "vendor/bin/phpstan analyse --memory-limit=2G",
         "test": "vendor/bin/pest",
         "test-coverage": "vendor/bin/pest --coverage",
         "format": "vendor/bin/pint",

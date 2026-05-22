@@ -3,7 +3,7 @@
 namespace Workbench\App\Providers;
 
 use Illuminate\Support\ServiceProvider;
-use Workbench\App\Console\Commands\KafkaBusPublicationTestCommand;
+use Workbench\App\Console\Commands\KafkaBusTestCommand;
 
 final class WorkbenchServiceProvider extends ServiceProvider
 {
@@ -12,7 +12,7 @@ final class WorkbenchServiceProvider extends ServiceProvider
         $this->app['config']->set('kafka-bus', require __DIR__.'/../../config/kafka-bus.php');
 
         $this->commands([
-            KafkaBusPublicationTestCommand::class,
+            KafkaBusTestCommand::class,
         ]);
     }
 }
