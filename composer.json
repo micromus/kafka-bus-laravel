@@ -19,8 +19,8 @@
         "php": "^8.2",
         "ext-rdkafka": "*",
         "illuminate/contracts": "^10.0 || ^11.0 || ^12.0",
-        "micromus/kafka-bus": "^1.0.0-RC9",
-        "micromus/kafka-bus-messages": "^1.0.0-RC7"
+        "micromus/kafka-bus": "^1.0",
+        "micromus/kafka-bus-messages": "^1.0"
     },
     "require-dev": {
         "larastan/larastan": "^2.9 || ^3.0",
