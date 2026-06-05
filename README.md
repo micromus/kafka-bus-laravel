@@ -199,6 +199,91 @@ Run a worker:
 php artisan kafka:consume default
 ```
 
+## Artisan commands
+
+| Command | Description |
+| --- | --- |
+| `kafka:consume {workerName}` | Start a long-running consumer for the given worker. |
+| `kafka:worker:list` | Show registered workers, their topic keys, resolved topic names, handlers, and middleware counts. |
+| `kafka:route:list` | Show registered producer routes (message class → topic) and middleware counts. |
+| `kafka:offset:show {workerName}` | Show current / min / max offsets for every partition of every topic the worker subscribes to. |
+| `kafka:offset:set {workerName} {topicKey} {offset} {--partition=}` | Set the committed offset for a topic. `offset` accepts `earliest`, `latest`, or a numeric value. Omit `--partition` to apply to all partitions of the topic. |
+
+### Inspecting workers and routes
+
+```bash
+php artisan kafka:worker:list
+```
+
+```
++----------+-----------+------------------------+----------------------------------------------------+------------+
+| Worker   | Topic key | Topic name             | Handler                                            | Middleware |
++----------+-----------+------------------------+----------------------------------------------------+------------+
+| default  | products  | production.fact.products.1 | App\Kafka\Consumers\ProductsTopicConsumer       | 0          |
+| default  | orders    | production.fact.orders.1   | App\Kafka\Consumers\OrdersTopicConsumer         | 1          |
+| products | products  | production.fact.products.1 | App\Kafka\Consumers\ProductsTopicConsumer       | 0          |
++----------+-----------+------------------------+----------------------------------------------------+------------+
+```
+
+```bash
+php artisan kafka:route:list
+```
+
+```
++----------------------------------------+-----------+----------------------------+------------+
+| Message                                | Topic key | Topic name                 | Middleware |
++----------------------------------------+-----------+----------------------------+------------+
+| App\Kafka\Messages\ProductMessage      | products  | production.fact.products.1 | 0          |
+| App\Kafka\Messages\OrderMessage        | orders    | production.fact.orders.1   | 1          |
++----------------------------------------+-----------+----------------------------+------------+
+```
+
+### Inspecting and resetting offsets
+
+```bash
+php artisan kafka:offset:show default
+```
+
+```
++-----------+----------------------------+-----------+---------+-----+-----+
+| Topic key | Topic name                 | Partition | Current | Min | Max |
++-----------+----------------------------+-----------+---------+-----+-----+
+| products  | production.fact.products.1 | 0         | 142     | 0   | 200 |
+| products  | production.fact.products.1 | 1         | 90      | 0   | 150 |
++-----------+----------------------------+-----------+---------+-----+-----+
+```
+
+Reset all partitions of a topic to the earliest available offset:
+
+```bash
+php artisan kafka:offset:set default products earliest
+```
+
+Move a single partition to an explicit numeric offset:
+
+```bash
+php artisan kafka:offset:set default products 150 --partition=0
+```
+
+Jump every partition to the high-water mark (skip backlog):
+
+```bash
+php artisan kafka:offset:set default products latest
+```
+
+The command prints the resulting offsets:
+
+```
++-----------+----------------------------+-----------+-----+-----+
+| Topic key | Topic name                 | Partition | Old | New |
++-----------+----------------------------+-----------+-----+-----+
+| products  | production.fact.products.1 | 0         | 142 | 0   |
+| products  | production.fact.products.1 | 1         | 90  | 0   |
++-----------+----------------------------+-----------+-----+-----+
+```
+
+> The worker must not be running while you reset its offsets — otherwise the active consumer group will overwrite the new position on its next commit.
+
 ## Commiter
 
 The Commiter component (powered by `micromus/kafka-bus-commiter`) provides:

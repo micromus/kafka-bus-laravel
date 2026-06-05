@@ -36,6 +36,14 @@ final readonly class WorkerFactory
     }
 
     /**
+     * @return list<string>
+     */
+    public function names(): array
+    {
+        return array_keys($this->workers);
+    }
+
+    /**
      * @param string $workerName
      * @return Worker
      *
