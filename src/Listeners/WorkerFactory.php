@@ -109,7 +109,7 @@ final readonly class WorkerFactory
 
         return new Options(
             additionalOptions: $options['additional_options'],
-            middlewares: $middleware,
+            middleware: $middleware,
             autoCommit: $options['auto_commit'] ?? true,
             consumerTimeout: $options['consumer_timeout'] ?? 5000,
         );

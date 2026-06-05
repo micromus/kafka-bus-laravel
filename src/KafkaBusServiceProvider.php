@@ -43,7 +43,7 @@ class KafkaBusServiceProvider extends ServiceProvider
     {
         $this->publishes([
             __DIR__.'/../config/kafka-bus.php' => config_path('kafka-bus.php'),
-        ], 'kafka-bus-config');
+        ], 'kafka-bus');
 
         if ($this->app->runningInConsole()) {
             $this->commands([

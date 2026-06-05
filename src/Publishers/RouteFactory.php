@@ -58,7 +58,7 @@ final readonly class RouteFactory
 
         return new Options(
             additionalOptions: $options['additional_options'],
-            middlewares: array_map($this->container->make(...), $options['middleware']),
+            middleware: array_map($this->container->make(...), $options['middleware']),
             flushTimeout: $options['flush_timeout'] ?? 5000,
             flushRetries: $options['flush_retries'] ?? 5,
         );
