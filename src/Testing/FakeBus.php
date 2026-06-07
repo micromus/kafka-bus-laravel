@@ -4,8 +4,14 @@ declare(strict_types=1);
 
 namespace Micromus\KafkaBusLaravel\Testing;
 
+use Micromus\KafkaBus\Bus\Listeners\Listener;
+use Micromus\KafkaBus\Bus\MessageBatch;
+use Micromus\KafkaBus\Bus\ThreadRegistry;
 use Micromus\KafkaBus\Interfaces\Bus\BusInterface;
+use Micromus\KafkaBus\Interfaces\Bus\ThreadInterface;
 use Micromus\KafkaBus\Interfaces\Connections\ConnectionRegistryInterface;
+use Micromus\KafkaBus\Interfaces\Consumers\Messages\ConsumerMessageInterface;
+use Micromus\KafkaBus\Interfaces\Producers\Messages\ProducerMessageInterface;
 use Micromus\KafkaBus\Producers\Messages\ProducerMessage;
 use Micromus\KafkaBus\Testing\Connections\ConnectionFaker;
 use Micromus\KafkaBus\Testing\Connections\ConnectionRegistryFaker;
@@ -13,36 +19,62 @@ use Micromus\KafkaBus\Topics\TopicRegistry;
 use PHPUnit\Framework\Assert;
 use RdKafka\Message;
 
-final readonly class KafkaBusFaker
+final readonly class FakeBus implements BusInterface
 {
     private function __construct(
+        private BusInterface    $bus,
         private ConnectionFaker $connectionFaker,
-        private TopicRegistry $topicRegistry = new TopicRegistry(),
+        private TopicRegistry   $topicRegistry,
     ) {
     }
 
-    /**
-     * Replace the ConnectionRegistryInterface binding with a ConnectionRegistryFaker
-     * and rebuild the Bus singletons so they use the fake connection.
-     * Call this at the start of each test that involves Kafka.
-     */
     public static function make(): self
     {
         $topicRegistry = app(TopicRegistry::class);
         $connectionFaker = new ConnectionFaker($topicRegistry);
-        $registryFaker = new ConnectionRegistryFaker($connectionFaker);
 
-        app()->instance(ConnectionRegistryInterface::class, $registryFaker);
-        app()->forgetInstance(TopicRegistry::class);
+        app()->instance(ConnectionRegistryInterface::class, new ConnectionRegistryFaker($connectionFaker));
+        app()->forgetInstance(ThreadRegistry::class);
         app()->forgetInstance(BusInterface::class);
 
-        return new self($connectionFaker, $topicRegistry);
+        $bus = app(BusInterface::class);
+
+        $fake = new self($bus, $connectionFaker, $topicRegistry);
+
+        app()->instance(BusInterface::class, $fake);
+
+        return $fake;
     }
 
-    // -------------------------------------------------------------------------
-    // Producer assertions
-    // -------------------------------------------------------------------------
+    #[\Override]
+    public function routes(): array
+    {
+        return $this->bus->routes();
+    }
 
+    #[\Override]
+    public function publish(ProducerMessageInterface $message): void
+    {
+        $this->bus->publish($message);
+    }
+
+    #[\Override]
+    public function publishBatch(MessageBatch $messageBatch): void
+    {
+        $this->bus->publishBatch($messageBatch);
+    }
+
+    #[\Override]
+    public function listener(string $listenerWorkerName): Listener
+    {
+        return $this->bus->listener($listenerWorkerName);
+    }
+
+    #[\Override]
+    public function onConnection(string $connectionName): ThreadInterface
+    {
+        return $this->bus->onConnection($connectionName);
+    }
     /**
      * Assert that a message of the given class was published,
      * optionally matching a callback condition on the resulting ProducerMessage.
@@ -50,7 +82,7 @@ final readonly class KafkaBusFaker
      * @param class-string $messageClass
      * @param callable(ProducerMessage): bool|null $callback
      */
-    public function assertPublished(string $messageClass, ?callable $callback = null): self
+    public function assertPublished(string $messageClass, ?callable $callback = null): void
     {
         $messages = $this->getPublished($messageClass);
 
@@ -67,8 +99,6 @@ final readonly class KafkaBusFaker
                 "[$messageClass] was published but no message matched the given condition."
             );
         }
-
-        return $this;
     }
 
     /**
@@ -76,7 +106,7 @@ final readonly class KafkaBusFaker
      *
      * @param class-string $messageClass
      */
-    public function assertPublishedTimes(string $messageClass, int $times): self
+    public function assertPublishedTimes(string $messageClass, int $times): void
     {
         $count = count($this->getPublished($messageClass));
 
@@ -85,8 +115,6 @@ final readonly class KafkaBusFaker
             $count,
             "Expected [$messageClass] to be published $times time(s), but it was published $count time(s)."
         );
-
-        return $this;
     }
 
     /**
@@ -94,26 +122,22 @@ final readonly class KafkaBusFaker
      *
      * @param class-string $messageClass
      */
-    public function assertNotPublished(string $messageClass): self
+    public function assertNotPublished(string $messageClass): void
     {
         Assert::assertEmpty(
             $this->getPublished($messageClass),
             "Expected [$messageClass] not to be published, but it was."
         );
-
-        return $this;
     }
 
     /**
      * Assert that no messages were published at all.
      */
-    public function assertNothingPublished(): self
+    public function assertNothingPublished(): void
     {
         $all = array_merge(...array_values($this->connectionFaker->publishedMessages) ?: [[]]);
 
         Assert::assertEmpty($all, 'Expected no messages to be published, but some were.');
-
-        return $this;
     }
 
     // -------------------------------------------------------------------------
@@ -153,10 +177,6 @@ final readonly class KafkaBusFaker
         return array_merge(...array_values($this->connectionFaker->publishedMessages));
     }
 
-    // -------------------------------------------------------------------------
-    // Consumer commit assertions (addMessage + listener()->listen() path)
-    // -------------------------------------------------------------------------
-
     /**
      * Assert that at least one message on the given topic was committed,
      * optionally matching a callback condition on the ConsumerMessageInterface.
@@ -164,9 +184,9 @@ final readonly class KafkaBusFaker
      * The callback receives a ConsumerMessageInterface instance, so you can inspect
      * payload(), headers(), key(), and — for the addMessage() path — original().
      *
-     * @param callable(\Micromus\KafkaBus\Interfaces\Consumers\Messages\ConsumerMessageInterface): bool|null $callback
+     * @param callable(ConsumerMessageInterface): bool|null $callback
      */
-    public function assertCommitted(string $topicKey, ?callable $callback = null): self
+    public function assertCommitted(string $topicKey, ?callable $callback = null): void
     {
         $messages = $this->getCommitted($topicKey);
 
@@ -183,14 +203,12 @@ final readonly class KafkaBusFaker
                 "A message on topic [$topicKey] was committed but none matched the given condition."
             );
         }
-
-        return $this;
     }
 
     /**
      * Assert that exactly $times messages were committed on the given topic.
      */
-    public function assertCommittedTimes(string $topicKey, int $times): self
+    public function assertCommittedTimes(string $topicKey, int $times): void
     {
         $count = count($this->getCommitted($topicKey));
 
@@ -199,26 +217,22 @@ final readonly class KafkaBusFaker
             $count,
             "Expected $times committed message(s) on topic [$topicKey], but got $count."
         );
-
-        return $this;
     }
 
     /**
      * Assert that no messages were committed at all.
      */
-    public function assertNothingCommitted(): self
+    public function assertNothingCommitted(): void
     {
         $all = array_merge(...array_values($this->connectionFaker->committedMessages) ?: [[]]);
 
         Assert::assertEmpty($all, 'Expected no messages to be committed, but some were.');
-
-        return $this;
     }
 
     /**
      * Return all committed ConsumerMessageInterface objects for the given topic key.
      *
-     * @return list<\Micromus\KafkaBus\Interfaces\Consumers\Messages\ConsumerMessageInterface>
+     * @return list<ConsumerMessageInterface>
      */
     public function getCommitted(string $topicKey): array
     {
@@ -227,14 +241,9 @@ final readonly class KafkaBusFaker
         return $this->connectionFaker->committedMessages[$topicName] ?? [];
     }
 
-    // -------------------------------------------------------------------------
-    // Consumer — queue messages for listener()->listen()
-    // -------------------------------------------------------------------------
-    public function addMessage(Message $message): self
+    public function addMessage(Message $message): void
     {
         $this->connectionFaker->addMessage($message);
-
-        return $this;
     }
 
     public function listen(string $workerName): void
@@ -243,10 +252,6 @@ final readonly class KafkaBusFaker
             ->listener($workerName)
             ->listen();
     }
-
-    // -------------------------------------------------------------------------
-    // Internal
-    // -------------------------------------------------------------------------
 
     /**
      * Resolve the full topic name for a given message class via the bus routes.

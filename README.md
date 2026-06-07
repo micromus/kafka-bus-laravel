@@ -136,6 +136,14 @@ public function execute(BusInterface $bus): void
 }
 ```
 
+Or via the `KafkaBus` facade:
+
+```php
+use Micromus\KafkaBusLaravel\Facades\KafkaBus;
+
+KafkaBus::publish(new \App\Kafka\Messages\ProductMessage(/* ... */));
+```
+
 ### Consumers
 
 Workers are the units consumed by the artisan command. Each worker subscribes to one or more topics and dispatches incoming messages to handler classes.
@@ -379,39 +387,35 @@ The middleware adds the `x-idempotency-key` header to every outgoing message; co
 composer test
 ```
 
-### KafkaBusFake
+### KafkaBus::fake()
 
-The package ships a first-class fake — `KafkaBusFake` — that works exactly like `Event::fake()` or `Mail::fake()`. Call `KafkaBusFake::make()` at the start of a test to replace the real `BusInterface` binding with an in-memory fake. From that point on every `publish()` call is intercepted and stored; consumer pipelines can be triggered directly without a broker.
-
-#### Setup
+The `KafkaBus` facade ships a first-class fake that works exactly like `Event::fake()` or `Mail::fake()`. Call `KafkaBus::fake()` at the start of a test to replace the real `BusInterface` binding with an in-memory `FakeBus`. From that point on every call to the facade is forwarded to the fake — `publish()` calls are intercepted and stored, consumer pipelines can be triggered directly, and the full set of assertion methods becomes available.
 
 ```php
-use Micromus\KafkaBusLaravel\Testing\KafkaBusFaker;
+use Micromus\KafkaBusLaravel\Facades\KafkaBus;
 
-$fake = KafkaBusFaker::make();
+KafkaBus::fake();
 ```
 
 #### Asserting producer messages
 
 ```php
 use App\Kafka\Messages\ProductMessage;
-use Micromus\KafkaBusLaravel\Testing\KafkaBusFaker;
+use Micromus\KafkaBusLaravel\Facades\KafkaBus;
 
 it('publishes a product message', function () {
-    $fake = KafkaBusFaker::make();
+    KafkaBus::fake();
 
-    // Run the code under test
     app(CreateProductAction::class)->execute(productId: 1);
 
-    // Assert the message was published
-    $fake->assertPublished(ProductMessage::class);
+    KafkaBus::assertPublished(ProductMessage::class);
 });
 ```
 
 Assert with a callback to inspect the serialised `ProducerMessage` (after the full producer pipeline, including middleware). The callback receives a `Micromus\KafkaBus\Producers\Messages\ProducerMessage` instance:
 
 ```php
-$fake->assertPublished(
+KafkaBus::assertPublished(
     ProductMessage::class,
     fn($msg) => str_contains($msg->payload, '"id":1')
         && isset($msg->headers['x-idempotency-key'])
@@ -422,134 +426,94 @@ Other available assertions:
 
 ```php
 // Assert published exactly N times
-$fake->assertPublishedTimes(ProductMessage::class, 2);
+KafkaBus::assertPublishedTimes(ProductMessage::class, 2);
 
 // Assert a specific message was NOT published
-$fake->assertNotPublished(ProductMessage::class);
+KafkaBus::assertNotPublished(ProductMessage::class);
 
 // Assert no messages were published at all
-$fake->assertNothingPublished();
+KafkaBus::assertNothingPublished();
 ```
 
 Retrieve the published messages directly for custom assertions:
 
 ```php
 // list<ProducerMessage> — serialised messages including payload, headers, topic
-$messages = $fake->getPublished(ProductMessage::class);
-$all      = $fake->allPublished();
+$messages = KafkaBus::getPublished(ProductMessage::class);
+$all      = KafkaBus::allPublished();
 ```
 
-Assertions return `$this`, so they can be chained:
+#### Dispatching and asserting consumer messages
+
+`addMessage()` queues an `RdKafka\Message` into the fake connection. Once queued, call `listen()` to run the full consumer path — `ConnectionFaker` → `ConsumerFaker` → `ConsumerStream` → consumer middleware → route middleware → handler → commit — without touching a real broker.
 
 ```php
-$fake
-    ->assertPublished(ProductMessage::class)
-    ->assertPublishedTimes(ProductMessage::class, 1)
-    ->assertNotPublished(OrderMessage::class);
-```
+use Micromus\KafkaBus\Testing\Consumers\MessageFactory;
+use Micromus\KafkaBusLaravel\Facades\KafkaBus;
 
-#### Dispatching consumer messages — via listener (recommended)
-
-`addMessage()` / `addJsonMessage()` queue a payload into the `ConnectionFaker`. Once queued, trigger processing with the real `listener()->listen()` call, which runs the complete consumer path: `ConnectionFaker` → `ConsumerFaker` → `ConsumerStream` → consumer middleware → route middleware → handler → commit.
-
-```php
 it('handles a product message', function () {
-    $fake = KafkaBusFake::make();
+    KafkaBus::fake();
 
-    $fake->addJsonMessage('products', ['id' => 1, 'name' => 'Widget']);
+    $message = MessageFactory::for()
+        ->withTopicKey('products')
+        ->withHeaders(['x-idempotency-key' => 'abc-123'])
+        ->make('{"id":1,"name":"Widget"}');
 
-    // Process the queue through the real consumer path
-    app(BusInterface::class)->listener('products')->listen();
+    KafkaBus::addMessage($message);
+    KafkaBus::listen('products');
 
     // Assert side effects produced by the handler
     expect(Product::find(1))->not->toBeNull();
 });
 ```
 
-Queue multiple messages at once:
+Queue multiple messages before triggering `listen()`:
 
 ```php
-$fake
-    ->addJsonMessage('products', ['id' => 1])
-    ->addJsonMessage('products', ['id' => 2]);
+$factory = MessageFactory::for()->withTopicKey('products');
 
-app(BusInterface::class)->listener('products')->listen();
-```
+KafkaBus::addMessage($factory->make('{"id":1}'));
+KafkaBus::addMessage($factory->make('{"id":2}'));
 
-Pass headers, a Kafka key, partition, and offset when needed:
-
-```php
-$fake->addMessage(
-    topicKey : 'products',
-    payload  : '{"id": 1}',
-    headers  : ['x-idempotency-key' => 'abc-123'],
-    key      : 'product-1',
-    partition: 0,
-    offset   : 42,
-);
+KafkaBus::listen('products');
 ```
 
 #### Asserting committed messages
 
-After `listener()->listen()` each successfully processed message is committed into `ConnectionFaker`. Use the commit assertions to verify that your handler ran and the offset was acknowledged:
+After `listen()` each successfully processed message is committed into the fake connection. Use the commit assertions to verify that your handler ran and the offset was acknowledged:
 
 ```php
-$fake->addJsonMessage('products', ['id' => 1, 'name' => 'Widget']);
+KafkaBus::addMessage(
+    MessageFactory::for()->withTopicKey('products')->make('{"id":1}')
+);
 
-app(BusInterface::class)->listener('products')->listen();
+KafkaBus::listen('products');
 
 // Assert at least one message was committed on the topic
-$fake->assertCommitted('products');
+KafkaBus::assertCommitted('products');
 
 // Assert with a condition on the ConsumerMessageInterface
-$fake->assertCommitted(
+KafkaBus::assertCommitted(
     'products',
-    fn($msg) => $msg->payload() === '{"id":1,"name":"Widget"}'
+    fn($msg) => $msg->payload() === '{"id":1}'
         && $msg->headers()['x-idempotency-key'] === 'abc-123'
 );
 
 // Assert exact count
-$fake->assertCommittedTimes('products', 1);
+KafkaBus::assertCommittedTimes('products', 2);
 
 // Assert nothing was committed (e.g. before listen() is called)
-$fake->assertNothingCommitted();
+KafkaBus::assertNothingCommitted();
 ```
 
 Retrieve committed messages directly for custom assertions:
 
 ```php
-$committed = $fake->getCommitted('products'); // list<ConsumerMessageInterface>
+$committed = KafkaBus::getCommitted('products'); // list<ConsumerMessageInterface>
 
 expect($committed[0]->payload())->toBe('{"id":1}');
 expect($committed[0]->headers())->toHaveKey('x-idempotency-key');
 ```
-
-#### Dispatching consumer messages — direct pipeline (bypass connection)
-
-`dispatch()` / `dispatchJson()` skip the connection layer entirely and run the payload straight through the worker's consumer pipeline (route resolution, route middleware, consumer middleware, handler). There is no commit step and no `ConsumerFaker` involved.
-
-Use this when you need a quick one-liner and don't care about commit behaviour or the real consumer path.
-
-```php
-$fake->dispatch('products', '{"id": 1}');
-$fake->dispatchJson('products', ['id' => 1]);
-```
-
-When the worker name differs from the topic key, pass the topic key explicitly:
-
-```php
-$fake->dispatch('products-secondary', '{"id": 1}', topicKey: 'products');
-$fake->dispatchJson('products-secondary', ['id' => 1], topicKey: 'products');
-```
-
-| Parameter | `addMessage` / `addJsonMessage` | `dispatch` / `dispatchJson` |
-|---|---|---|
-| Connection path | Full (`ConnectionFaker` → `ConsumerFaker`) | Bypassed |
-| Consumer middleware | ✓ | ✓ |
-| Route middleware | ✓ | ✓ |
-| Handler | ✓ | ✓ |
-| Commit | ✓ | ✗ |
-| Requires `listener()->listen()` | ✓ | ✗ |
 
 ## Changelog
 
