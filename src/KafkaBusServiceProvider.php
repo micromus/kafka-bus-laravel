@@ -15,6 +15,10 @@ use Micromus\KafkaBus\Interfaces\Connections\ConnectionRegistryInterface;
 use Micromus\KafkaBus\Producers\ProducerStreamFactory;
 use Micromus\KafkaBus\Topics\TopicRegistry;
 use Micromus\KafkaBusLaravel\Commands\KafkaConsumeCommand;
+use Micromus\KafkaBusLaravel\Commands\KafkaOffsetSetCommand;
+use Micromus\KafkaBusLaravel\Commands\KafkaOffsetShowCommand;
+use Micromus\KafkaBusLaravel\Commands\KafkaRouteListCommand;
+use Micromus\KafkaBusLaravel\Commands\KafkaWorkerListCommand;
 use Micromus\KafkaBusLaravel\Connections\ConnectionRegistryFactory;
 use Micromus\KafkaBusLaravel\Factories\TopicRegistryFactory;
 use Micromus\KafkaBusLaravel\Listeners\LaravelWorkerRegistry;
@@ -43,11 +47,15 @@ class KafkaBusServiceProvider extends ServiceProvider
     {
         $this->publishes([
             __DIR__.'/../config/kafka-bus.php' => config_path('kafka-bus.php'),
-        ], 'kafka-bus-config');
+        ], 'kafka-bus');
 
         if ($this->app->runningInConsole()) {
             $this->commands([
                 KafkaConsumeCommand::class,
+                KafkaOffsetShowCommand::class,
+                KafkaOffsetSetCommand::class,
+                KafkaWorkerListCommand::class,
+                KafkaRouteListCommand::class,
             ]);
         }
     }

@@ -36,6 +36,14 @@ final readonly class WorkerFactory
     }
 
     /**
+     * @return list<string>
+     */
+    public function names(): array
+    {
+        return array_keys($this->workers);
+    }
+
+    /**
      * @param string $workerName
      * @return Worker
      *
@@ -109,7 +117,7 @@ final readonly class WorkerFactory
 
         return new Options(
             additionalOptions: $options['additional_options'],
-            middlewares: $middleware,
+            middleware: $middleware,
             autoCommit: $options['auto_commit'] ?? true,
             consumerTimeout: $options['consumer_timeout'] ?? 5000,
         );
