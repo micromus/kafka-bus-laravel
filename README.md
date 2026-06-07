@@ -204,8 +204,8 @@ php artisan kafka:consume default
 | Command | Description |
 | --- | --- |
 | `kafka:consume {workerName}` | Start a long-running consumer for the given worker. |
-| `kafka:worker:list` | Show registered workers, their topic keys, resolved topic names, handlers, and middleware counts. |
-| `kafka:route:list` | Show registered producer routes (message class → topic) and middleware counts. |
+| `kafka:worker:list` | Show registered workers, their topic keys, resolved topic names, handlers, consumer middleware, and route middleware. |
+| `kafka:route:list` | Show registered producer routes (message class → topic) and middleware. |
 | `kafka:offset:show {workerName}` | Show current / min / max offsets for every partition of every topic the worker subscribes to. |
 | `kafka:offset:set {workerName} {topicKey} {offset} {--partition=}` | Set the committed offset for a topic. `offset` accepts `earliest`, `latest`, or a numeric value. Omit `--partition` to apply to all partitions of the topic. |
 
@@ -216,13 +216,13 @@ php artisan kafka:worker:list
 ```
 
 ```
-+----------+-----------+------------------------+----------------------------------------------------+------------+
-| Worker   | Topic key | Topic name             | Handler                                            | Middleware |
-+----------+-----------+------------------------+----------------------------------------------------+------------+
-| default  | products  | production.fact.products.1 | App\Kafka\Consumers\ProductsTopicConsumer       | 0          |
-| default  | orders    | production.fact.orders.1   | App\Kafka\Consumers\OrdersTopicConsumer         | 1          |
-| products | products  | production.fact.products.1 | App\Kafka\Consumers\ProductsTopicConsumer       | 0          |
-+----------+-----------+------------------------+----------------------------------------------------+------------+
++----------+-----------+----------------------------+------------------------------------------+---------------------+----------------+
+| Worker   | Topic key | Topic name                 | Handler                                  | Consumer Middleware | Route Middleware|
++----------+-----------+----------------------------+------------------------------------------+---------------------+----------------+
+| default  | products  | production.fact.products.1 | App\Kafka\Consumers\ProductsTopicConsumer|                     |                |
+| default  | orders    | production.fact.orders.1   | App\Kafka\Consumers\OrdersTopicConsumer  | App\...\AuditMiddleware | App\...\TenantMiddleware |
+| products | products  | production.fact.products.1 | App\Kafka\Consumers\ProductsTopicConsumer|                     |                |
++----------+-----------+----------------------------+------------------------------------------+---------------------+----------------+
 ```
 
 ```bash
@@ -379,17 +379,177 @@ The middleware adds the `x-idempotency-key` header to every outgoing message; co
 composer test
 ```
 
-To run the suite against a fake bus, switch the `default` connection to `testing` (the `null` driver) and assert with `ProducerMessageFaker`:
+### KafkaBusFake
+
+The package ships a first-class fake — `KafkaBusFake` — that works exactly like `Event::fake()` or `Mail::fake()`. Call `KafkaBusFake::make()` at the start of a test to replace the real `BusInterface` binding with an in-memory fake. From that point on every `publish()` call is intercepted and stored; consumer pipelines can be triggered directly without a broker.
+
+#### Setup
 
 ```php
-use Micromus\KafkaBus\Interfaces\Bus\BusInterface;
-use Micromus\KafkaBus\Testing\Messages\ProducerMessageFaker;
+use Micromus\KafkaBusLaravel\Testing\KafkaBusFaker;
 
-public function test_it_publishes_a_message(BusInterface $bus): void
-{
-    $bus->publish(new ProducerMessageFaker());
-}
+$fake = KafkaBusFaker::make();
 ```
+
+#### Asserting producer messages
+
+```php
+use App\Kafka\Messages\ProductMessage;
+use Micromus\KafkaBusLaravel\Testing\KafkaBusFaker;
+
+it('publishes a product message', function () {
+    $fake = KafkaBusFaker::make();
+
+    // Run the code under test
+    app(CreateProductAction::class)->execute(productId: 1);
+
+    // Assert the message was published
+    $fake->assertPublished(ProductMessage::class);
+});
+```
+
+Assert with a callback to inspect the serialised `ProducerMessage` (after the full producer pipeline, including middleware). The callback receives a `Micromus\KafkaBus\Producers\Messages\ProducerMessage` instance:
+
+```php
+$fake->assertPublished(
+    ProductMessage::class,
+    fn($msg) => str_contains($msg->payload, '"id":1')
+        && isset($msg->headers['x-idempotency-key'])
+);
+```
+
+Other available assertions:
+
+```php
+// Assert published exactly N times
+$fake->assertPublishedTimes(ProductMessage::class, 2);
+
+// Assert a specific message was NOT published
+$fake->assertNotPublished(ProductMessage::class);
+
+// Assert no messages were published at all
+$fake->assertNothingPublished();
+```
+
+Retrieve the published messages directly for custom assertions:
+
+```php
+// list<ProducerMessage> — serialised messages including payload, headers, topic
+$messages = $fake->getPublished(ProductMessage::class);
+$all      = $fake->allPublished();
+```
+
+Assertions return `$this`, so they can be chained:
+
+```php
+$fake
+    ->assertPublished(ProductMessage::class)
+    ->assertPublishedTimes(ProductMessage::class, 1)
+    ->assertNotPublished(OrderMessage::class);
+```
+
+#### Dispatching consumer messages — via listener (recommended)
+
+`addMessage()` / `addJsonMessage()` queue a payload into the `ConnectionFaker`. Once queued, trigger processing with the real `listener()->listen()` call, which runs the complete consumer path: `ConnectionFaker` → `ConsumerFaker` → `ConsumerStream` → consumer middleware → route middleware → handler → commit.
+
+```php
+it('handles a product message', function () {
+    $fake = KafkaBusFake::make();
+
+    $fake->addJsonMessage('products', ['id' => 1, 'name' => 'Widget']);
+
+    // Process the queue through the real consumer path
+    app(BusInterface::class)->listener('products')->listen();
+
+    // Assert side effects produced by the handler
+    expect(Product::find(1))->not->toBeNull();
+});
+```
+
+Queue multiple messages at once:
+
+```php
+$fake
+    ->addJsonMessage('products', ['id' => 1])
+    ->addJsonMessage('products', ['id' => 2]);
+
+app(BusInterface::class)->listener('products')->listen();
+```
+
+Pass headers, a Kafka key, partition, and offset when needed:
+
+```php
+$fake->addMessage(
+    topicKey : 'products',
+    payload  : '{"id": 1}',
+    headers  : ['x-idempotency-key' => 'abc-123'],
+    key      : 'product-1',
+    partition: 0,
+    offset   : 42,
+);
+```
+
+#### Asserting committed messages
+
+After `listener()->listen()` each successfully processed message is committed into `ConnectionFaker`. Use the commit assertions to verify that your handler ran and the offset was acknowledged:
+
+```php
+$fake->addJsonMessage('products', ['id' => 1, 'name' => 'Widget']);
+
+app(BusInterface::class)->listener('products')->listen();
+
+// Assert at least one message was committed on the topic
+$fake->assertCommitted('products');
+
+// Assert with a condition on the ConsumerMessageInterface
+$fake->assertCommitted(
+    'products',
+    fn($msg) => $msg->payload() === '{"id":1,"name":"Widget"}'
+        && $msg->headers()['x-idempotency-key'] === 'abc-123'
+);
+
+// Assert exact count
+$fake->assertCommittedTimes('products', 1);
+
+// Assert nothing was committed (e.g. before listen() is called)
+$fake->assertNothingCommitted();
+```
+
+Retrieve committed messages directly for custom assertions:
+
+```php
+$committed = $fake->getCommitted('products'); // list<ConsumerMessageInterface>
+
+expect($committed[0]->payload())->toBe('{"id":1}');
+expect($committed[0]->headers())->toHaveKey('x-idempotency-key');
+```
+
+#### Dispatching consumer messages — direct pipeline (bypass connection)
+
+`dispatch()` / `dispatchJson()` skip the connection layer entirely and run the payload straight through the worker's consumer pipeline (route resolution, route middleware, consumer middleware, handler). There is no commit step and no `ConsumerFaker` involved.
+
+Use this when you need a quick one-liner and don't care about commit behaviour or the real consumer path.
+
+```php
+$fake->dispatch('products', '{"id": 1}');
+$fake->dispatchJson('products', ['id' => 1]);
+```
+
+When the worker name differs from the topic key, pass the topic key explicitly:
+
+```php
+$fake->dispatch('products-secondary', '{"id": 1}', topicKey: 'products');
+$fake->dispatchJson('products-secondary', ['id' => 1], topicKey: 'products');
+```
+
+| Parameter | `addMessage` / `addJsonMessage` | `dispatch` / `dispatchJson` |
+|---|---|---|
+| Connection path | Full (`ConnectionFaker` → `ConsumerFaker`) | Bypassed |
+| Consumer middleware | ✓ | ✓ |
+| Route middleware | ✓ | ✓ |
+| Handler | ✓ | ✓ |
+| Commit | ✓ | ✗ |
+| Requires `listener()->listen()` | ✓ | ✗ |
 
 ## Changelog
 
