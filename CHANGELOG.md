@@ -2,6 +2,14 @@
 
 All notable changes to `laravel-kafka-bus` will be documented in this file.
 
+## v2.1.0 - 2026-06-07
+
+### What's Changed
+
+* feat: Добавление компонента Commiter by @popkovkirill in https://github.com/micromus/kafka-bus-laravel/pull/16
+
+**Full Changelog**: https://github.com/micromus/kafka-bus-laravel/compare/v2.0.0...v2.1.0
+
 ## v2.0.0-RC1 - 2026-05-22
 
 ### What's Changed
